@@ -1,0 +1,6 @@
+<!-- copy and paste this XML code here: "https://jar-download.com/online-maven-download-tool.php" to downlaod the required dependencies ->
+<dependency>
+      <groupId>org.bytedeco.javacpp-presets</groupId>
+      <artifactId>opencv-platform</artifactId>
+      <version>3.4.0-1.4</version>
+</dependency>
