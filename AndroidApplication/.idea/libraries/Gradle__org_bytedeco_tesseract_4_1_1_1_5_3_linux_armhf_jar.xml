@@ -1,0 +1,9 @@
+<component name="libraryTable">
+  <library name="Gradle: org.bytedeco:tesseract:4.1.1-1.5.3:linux-armhf@jar">
+    <CLASSES>
+      <root url="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/org.bytedeco/tesseract/4.1.1-1.5.3/213700db135160d3cf22bc289b46a26f1ce5461c/tesseract-4.1.1-1.5.3-linux-armhf.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>
