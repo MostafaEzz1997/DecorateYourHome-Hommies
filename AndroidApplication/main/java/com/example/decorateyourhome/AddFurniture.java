@@ -1,14 +1,17 @@
 package com.example.decorateyourhome;
 
+import android.annotation.SuppressLint;
 import android.content.ClipData;
 import android.content.ContentResolver;
 import android.content.ContentUris;
 import android.content.Context;
 import android.database.Cursor;
+import android.graphics.Rect;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.provider.DocumentsContract;
+import android.view.MotionEvent;
 import android.widget.ImageView;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
@@ -51,19 +54,19 @@ import static org.bytedeco.opencv.global.opencv_imgcodecs.imread;
 import static org.bytedeco.opencv.global.opencv_imgcodecs.imwrite;
 import static org.bytedeco.opencv.opencv_stitching.Stitcher.PANORAMA;
 
-public class AddFurniture extends AppCompatActivity {
-
-    ImageView imageView;
+public class AddFurniture extends AppCompatActivity implements View.OnTouchListener {
+    ImageView myImage;
     Button button1;
     private static final int PICK_IMAGE=100;
     final int REQUEST_EXTERNAL_STORAGE = 200;
+    DragRectView view;
     Uri imageUri;
+    boolean STITCHING_OK=false;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.furniture_add);
-
-        imageView=(ImageView)findViewById(R.id.imageView);
         button1 = (Button)findViewById(R.id.button1);
         button1.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -88,13 +91,26 @@ public class AddFurniture extends AppCompatActivity {
                 }
             }
         });
+        view = (DragRectView) findViewById(R.id.dragRect);
+        myImage = (ImageView) findViewById(R.id.imageView);
+        if (null != view&&STITCHING_OK==true) {
+            view.setOnUpCallback(new DragRectView.OnUpCallback() {
+                @Override
+                public void onRectFinished(final Rect rect) {
+                    Toast.makeText(getApplicationContext(), "Rect is (" + rect.left + ", " + rect.top + ", " + rect.right + ", " + rect.bottom + ")",
+                            Toast.LENGTH_LONG).show();
+                }
+            });
+        }
+        //myImage.setOnTouchListener(AddFurniture.this);
     }
+    /*This function is to get one image from the gallery */
     private void openGallery(){
-
         Intent gallery =new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.INTERNAL_CONTENT_URI);
         gallery.setType("image/*");
         startActivityForResult(gallery,PICK_IMAGE);
     }
+    /*This function is to get one multiple images from the gallery */
     public void launchGalleryIntent() {
         Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
         intent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true);
@@ -125,15 +141,14 @@ public class AddFurniture extends AppCompatActivity {
         }
     }
 
-
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
 
         super.onActivityResult(requestCode, resultCode, data);
         //System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
+        //if the user pressed select room images
         if (requestCode == REQUEST_EXTERNAL_STORAGE && resultCode == RESULT_OK) {
 
-            final ImageView imageView = findViewById(R.id.image_view);
             final List<Bitmap> bitmaps = new ArrayList<>();
             ClipData clipData = data.getClipData();
 
@@ -144,7 +159,6 @@ public class AddFurniture extends AppCompatActivity {
                 Mat img = null, img2, img3, img4;
                 //String result_name = "drawable://" + R.drawable.result;
 
-                File file;
                 //multiple images selecetd
                 for (int i = 0; i < clipData.getItemCount(); i++) {
                     Uri imageUri = clipData.getItemAt(i).getUri();
@@ -157,7 +171,6 @@ public class AddFurniture extends AppCompatActivity {
                         e.printStackTrace();
                     }
 
-
                     Log.d("RESULT", "path os passed");
                     String spath = imageUri.toString() ;// "file:///mnt/sdcard/FileName.mp3"
                     String path = getPath(getApplicationContext(), imageUri);
@@ -166,51 +179,17 @@ public class AddFurniture extends AppCompatActivity {
                     //img = imread(imageUri.getPath());
                     img = imread(path);
                     InputStream stream = null;
-                    /*
-
-                    //Uri uri = Uri.parse(path);
-                    try {
-                        stream = getContentResolver().openInputStream(imageUri);
-                    } catch (FileNotFoundException e) {
-                        e.printStackTrace();
-                    }
-                    BitmapFactory.Options bmpFactoryOptions = new BitmapFactory.Options();
-                    bmpFactoryOptions.inPreferredConfig = Bitmap.Config.ARGB_8888;
-                    Bitmap bmp = BitmapFactory.decodeStream(stream, null, bmpFactoryOptions);
-                    //Mat ImageMat = new Mat();
-                    OpenCVFrameConverter.ToMat converter1 = new OpenCVFrameConverter.ToMat();
-                    OpenCVFrameConverter.ToOrgOpenCvCoreMat converter2 = new OpenCVFrameConverter.ToOrgOpenCvCoreMat();
-                    org.opencv.core.Mat ImageMat = converter2.convert(converter1.convert(img));
-                    Utils.bitmapToMat(bmp, ImageMat);
-                    img = converter1.convert(converter2.convert(ImageMat));
-
-                    */
                     Log.d("READ", "message is read");
                     //file = new File(new URI(result_name));
                     imgs.push_back(img);
 
                 }
                 Log.i("Before", "Before is OK");
-
-                //Uri result = Uri.parse("android.resource://com.example.decorateyourhome/" + R.drawable.result);
-                /*Uri result = Uri.parse(ContentResolver.SCHEME_ANDROID_RESOURCE +
-                        "://" + getResources().getResourcePackageName(R.drawable.result)
-                        + '/' + getResources().getResourceTypeName(R.drawable.result) + '/' + getResources().getResourceEntryName(R.drawable.result) );
-
-                */
-                //Uri result = Uri.parse("android.resource://com.example.decorateyourhome/drawable/result");
                 Uri result = Uri.parse("drawable://" + R.drawable.result);
-                //String second =result.toString() ;// "file:///mnt/sdcard/FileName.mp3"
-                //String second = "drawable://" + R.drawable.result;
                 String second = "result.jpg";
-                // String result_name=getPath(getApplicationContext(), result);
-               // Log.i("First Path", result_name);
                 File AbsPath= getAbsoluteFile(second,AddFurniture.this);
                 String result_name = AbsPath.toString();
                 Log.i("ABSOLUTE", result_name);
-                //String result_name =result.toString() ;// "file:///mnt/sdcard/FileName.mp3"
-                //Log.i("First Path", result_name);
-                //Log.i("SECOND", second);
                 Stitcher stitcher = Stitcher.create(PANORAMA);
                 int status = stitcher.stitch(imgs, pano);
                 if (status != Stitcher.OK) {
@@ -226,10 +205,11 @@ public class AddFurniture extends AppCompatActivity {
                         Log.i("Exist", "img exists");
                         Bitmap myBitmap = BitmapFactory.decodeFile(imgFile.getAbsolutePath());
 
-                        ImageView myImage = (ImageView) findViewById(R.id.imageView);
 
                         myImage.setImageBitmap(myBitmap);
-                        Toast.makeText(this, "Pic must be shown now", Toast.LENGTH_LONG).show();
+                        STITCHING_OK=true;
+                        Toast.makeText(this, "select your area", Toast.LENGTH_LONG).show();
+                        //final DragRectView view = (DragRectView) findViewById(R.id.dragRect);
                     }
                     else{
                         Toast.makeText(this, "no result picture", Toast.LENGTH_LONG).show();
@@ -240,42 +220,25 @@ public class AddFurniture extends AppCompatActivity {
             }
             else{
                     //single image selected
+                   // ImageView myImage = (ImageView) findViewById(R.id.imageView);
                     Uri imageUri = data.getData();
                     Log.d("URI", imageUri.toString());
                     try {
+
                         InputStream inputStream = getContentResolver().openInputStream(imageUri);
                         Bitmap bitmap = BitmapFactory.decodeStream(inputStream);
                         bitmaps.add(bitmap);
+                        myImage.setImageURI(imageUri);
+                        STITCHING_OK=true;
                     } catch (FileNotFoundException e) {
                         e.printStackTrace();
                     }
                 }
 
-/*
-            new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    for (final Bitmap b : bitmaps) {
-                        runOnUiThread(new Runnable() {
-                            @Override
-                            public void run() {
-                                imageView.setImageBitmap(b);
-                            }
-                        });
-
-                        try {
-                            Thread.sleep(3000);
-                        } catch (InterruptedException e) {
-                            e.printStackTrace();
-                        }
-                    }
-                }
-            }).start();
-            */
             }
-
+        // to add furniture image
         else if ( resultCode == RESULT_OK) {
-
+            final ImageView imageView = findViewById(R.id.image_view);
             imageUri = data.getData();
             final InputStream imageStream;
             try {
@@ -286,25 +249,42 @@ public class AddFurniture extends AppCompatActivity {
                 e.printStackTrace();
             }
 
-            //imageView.setImageURI(imageUri);
-
-
         }
-        /*if (resultCode == RESULT_OK) {
-            try {
-                imageUri = data.getData();
-                final InputStream imageStream = getContentResolver().openInputStream(imageUri);
-                final Bitmap selectedImage = BitmapFactory.decodeStream(imageStream);
-                imageView.setImageBitmap(selectedImage);
-            } catch (FileNotFoundException e) {
-                e.printStackTrace();
-                Toast.makeText(MainActivity.this, "Something went wrong", Toast.LENGTH_LONG).show();
+    }
+    private View.OnTouchListener handleTouch = new View.OnTouchListener() {
+        @Override
+        public boolean onTouch(View v, MotionEvent event) {
+
+            if (null != view) {
+                view.setOnUpCallback(new DragRectView.OnUpCallback() {
+                    @Override
+                    public void onRectFinished(final Rect rect) {
+                        Toast.makeText(getApplicationContext(), "Rect is (" + rect.left + ", " + rect.top + ", " + rect.right + ", " + rect.bottom + ")",
+                                Toast.LENGTH_LONG).show();
+                    }
+                });
             }
 
-        }else {
-            Toast.makeText(MainActivity.this, "You haven't picked Image",Toast.LENGTH_LONG).show();
-        }*/
+
+            return true;
+        }
+    };
+
+    @SuppressLint("ClickableViewAccessibility")
+    public boolean onTouch(View v, MotionEvent event) {
+        if (null != view) {
+            view.setOnUpCallback(new DragRectView.OnUpCallback() {
+                @Override
+                public void onRectFinished(final Rect rect) {
+                    Toast.makeText(getApplicationContext(), "Rect is (" + rect.left + ", " + rect.top + ", " + rect.right + ", " + rect.bottom + ")",
+                            Toast.LENGTH_LONG).show();
+                }
+            });
+        }
+        return true;
     }
+
+
     public File getAbsoluteFile(String relativePath, Context context) {
         if (Environment.MEDIA_MOUNTED.equals(Environment.getExternalStorageState())) {
             return new File(context.getExternalFilesDir(null), relativePath);
@@ -409,7 +389,5 @@ public class AddFurniture extends AppCompatActivity {
     public static boolean isMediaDocument(Uri uri) {
         return "com.android.providers.media.documents".equals(uri.getAuthority());
     }
-
-
 
 }
