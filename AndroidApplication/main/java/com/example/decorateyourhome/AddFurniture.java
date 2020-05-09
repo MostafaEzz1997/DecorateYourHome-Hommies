@@ -12,6 +12,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.provider.DocumentsContract;
+import android.text.Layout;
 import android.view.MotionEvent;
 import android.widget.ImageView;
 import androidx.annotation.Nullable;
@@ -48,6 +49,7 @@ import org.bytedeco.librealsense.context;
 import org.bytedeco.opencv.global.opencv_core;
 import org.bytedeco.opencv.global.opencv_imgproc;
 import org.bytedeco.opencv.opencv_core.Scalar;
+import org.bytedeco.opencv.opencv_core.Size;
 import org.bytedeco.opencv.opencv_core.UMat;
 import org.bytedeco.opencv.opencv_cudaimgproc.CannyEdgeDetector;
 import org.opencv.android.Utils;
@@ -60,7 +62,9 @@ import org.bytedeco.javacv.OpenCVFrameConverter;
 import org.bytedeco.opencv.opencv_core.Mat;
 import org.bytedeco.opencv.opencv_core.MatVector;
 import org.bytedeco.opencv.opencv_stitching.Stitcher;
+import org.opencv.core.Range;
 import org.opencv.imgproc.Imgproc;
+import org.opencv.ml.TrainData;
 
 import static org.bytedeco.opencv.global.opencv_imgcodecs.imread;
 import static org.bytedeco.opencv.global.opencv_imgcodecs.imwrite;
@@ -76,13 +80,14 @@ public class AddFurniture extends AppCompatActivity {
     boolean STITCHING_OK=false;
     File WorkingDirectory;
     File roomPath;
-    File f_mask;
-    File f_black_background;
-    File roi;
+    String SroomPath;
+    String fur_black_background;
+    String fur_mask;
+
+    File roi,output_final;
     int top_left_x,top_left_y,bottom_right_x,bottom_right_y;
-    int height,width;
+    int rect_height,rect_width,img_height,img_width,layout_hight,layout_width;
     org.bytedeco.opencv.opencv_core.Rect rectCrop ;
-    Rect rectangle;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -125,19 +130,37 @@ public class AddFurniture extends AppCompatActivity {
         });
         view = (DragRectView) findViewById(R.id.dragRect);
         myImage = (ImageView) findViewById(R.id.imageView);
-        if (null != view&&STITCHING_OK==true) {
+        //Layout layout=(Layout)findViewById(R.id.layout);
+        //Layout layout=(Layout)findViewById(R.id.constrain);
+        //Layout layout =  findViewById(R.id.constrain);
+        if (null != view) {
             view.setOnUpCallback(new DragRectView.OnUpCallback() {
                 @Override
                 public void onRectFinished(final Rect rect) {
                     //rectPoints[0][0]=  rect.left;
-                    rectangle=rect;
-                    top_left_x=rect.left;
-                    top_left_y=rect.top;
+
+                    top_left_x=(int)(((double)rect.left/(double)1090)*img_width);
+                    top_left_y=(int)(((double)rect.top/(double)700)*img_height);
                     bottom_right_x=rect.right;
                     bottom_right_y=rect.bottom;
-                    height = rect.height();
-                    width = rect.width();
-                    rectCrop= new org.bytedeco.opencv.opencv_core.Rect(top_left_x,top_left_y,width,height);
+                    //int h = Math.abs(img_height-)
+
+                    rect_height = (int)(((double)rect.height()/(double)530)*img_height);
+                    rect_width =(int)(((double) rect.width()/(double)1000)*img_width);
+
+                    //rect_height=(int)Math.abs(bottom_right_x-top_left_x);
+                    //rect_height = (int) Math.abs(rect.height()-Math.abs(rect.height()-img_height));
+                    //rect_width = (int) Math.abs(rect.width()-Math.abs(rect.width()-img_width));
+                    //rect_width =(int)(((double) rect.width()/(double)1070)*img_width);
+                    layout_hight = view.getLayoutParams().height;
+                    layout_width = view.getLayoutParams().width;
+
+
+                    Log.i("LAYOUT WIDTH","width : "+layout_width +" height : "+ layout_hight);
+
+                    rectCrop= new org.bytedeco.opencv.opencv_core.Rect(top_left_x,top_left_y,rect_width,rect_height);
+                    //rectCrop= new org.bytedeco.opencv.opencv_core.Rect(198,198,rect_width,rect_height);
+
 /*
                     Toast.makeText(getApplicationContext(), "size is (" + rectCrop.size() + ", " + rectCrop.tl() + ")",
                             Toast.LENGTH_LONG).show();
@@ -222,8 +245,8 @@ public class AddFurniture extends AppCompatActivity {
                     Log.d("RESULT", "path os passed");
                     String spath = imageUri.toString() ;// "file:///mnt/sdcard/FileName.mp3"
                     String path = getPath(getApplicationContext(), imageUri);
-                    Log.i("First Path", path);
-                    Log.i("SECOND", spath);
+                    //Log.i("First Path", path);
+                    //Log.i("SECOND", spath);
                     //img = imread(imageUri.getPath());
                     img = imread(path);
                     Log.d("READ", "message is read");
@@ -232,7 +255,7 @@ public class AddFurniture extends AppCompatActivity {
 
                 roomPath = new File(WorkingDirectory,"roomPic.jpg");
                 String result_name = roomPath.toString();
-
+                SroomPath=roomPath.toString();
                 /*The following commented method is a method to get the path of an image in the drawable directory*/
                 /*
                 Log.i("Before", "Before is OK");
@@ -251,7 +274,7 @@ public class AddFurniture extends AppCompatActivity {
                     // then stitching is ok
 
                     Log.i("TAG", "OK");
-                    imwrite(result_name, pano);
+                    imwrite(SroomPath, pano);
                     //File imgFile = new File(result_name);
                     //Log.i("imgfile", "img file is done");
                     if (roomPath.exists()) {
@@ -259,6 +282,10 @@ public class AddFurniture extends AppCompatActivity {
                         Bitmap myBitmap = BitmapFactory.decodeFile(roomPath.getAbsolutePath());
                         myImage.setImageBitmap(myBitmap);
                         STITCHING_OK=true;
+                        img_width=myBitmap.getWidth();
+                        img_height=myBitmap.getHeight();
+
+                    Log.i("IMAGE WIDTH","width : "+img_width +" height : "+ img_height);
                         Toast.makeText(this, "select your area", Toast.LENGTH_LONG).show();
                         //final DragRectView view = (DragRectView) findViewById(R.id.dragRect);
                     }
@@ -278,9 +305,19 @@ public class AddFurniture extends AppCompatActivity {
 
                         InputStream inputStream = getContentResolver().openInputStream(imageUri);
                         Bitmap bitmap = BitmapFactory.decodeStream(inputStream);
-                        bitmaps.add(bitmap);
+                        //bitmaps.add(bitmap);
                         myImage.setImageURI(imageUri);
                         STITCHING_OK=true;
+                        SroomPath = getPath(getApplicationContext(), imageUri);
+                        String spath = imageUri.toString() ;// "file:///mnt/sdcard/FileName.mp3"
+                       // String path = getPath(getApplicationContext(), imageUri);
+                        Log.i("First Path", SroomPath);
+                        Log.i("SECOND", spath);
+                        img_width=bitmap.getWidth();
+                        img_height=bitmap.getHeight();
+                        // roomPath=new File(imageUri.get());
+                        //roomPath=path.parse
+
                         Log.i("Furn Path", "Not furn area");
                     } catch (FileNotFoundException e) {
                         e.printStackTrace();
@@ -300,16 +337,27 @@ public class AddFurniture extends AppCompatActivity {
                 final Bitmap selectedImage = BitmapFactory.decodeStream(imageStream);
                 imageView.setImageURI(imageUri);
 */
-                String spath = imageUri.toString();// "file:///mnt/sdcard/FileName.mp3"
+                //String spath = imageUri.toString();// "file:///mnt/sdcard/FileName.mp3"
                 String path = getPath(getApplicationContext(), imageUri);
                 Log.i("Furn Path", path);
-                Log.i("Furn SECOND", spath);
-                furniture_Analysis(path);
+                //Log.i("Furn SECOND", spath);
+                //furniture_Analysis(path);
 
-                AddFurniture(roomPath.toString(), path);
+                AddFurniture(SroomPath, path);
+              /*  if (output_final.exists()) {
+                    Log.i("Exist", "img exists");
+                    Bitmap myBitmap = BitmapFactory.decodeFile(output_final.getAbsolutePath());
+                    //Bitmap myBitmap = BitmapFactory.decodeFile(f_black_background.getAbsolutePath());
+                    imageView.setImageBitmap(myBitmap);
+                    //STITCHING_OK = true;
+                    Toast.makeText(this, "select your area", Toast.LENGTH_LONG).show();
+                    //final DragRectView view = (DragRectView) findViewById(R.id.dragRect);
+                }*/
+
                 if (roi.exists()) {
                     Log.i("Exist", "img exists");
                     Bitmap myBitmap = BitmapFactory.decodeFile(roi.getAbsolutePath());
+                    //Bitmap myBitmap = BitmapFactory.decodeFile(f_black_background.getAbsolutePath());
                     imageView.setImageBitmap(myBitmap);
                     //STITCHING_OK = true;
                     Toast.makeText(this, "select your area", Toast.LENGTH_LONG).show();
@@ -322,6 +370,109 @@ public class AddFurniture extends AppCompatActivity {
 
         }
     }
+
+
+
+    public void AddFurniture(String room_path,String imPath){
+        //reading the original furniture image given from the user
+        Mat f_img = new Mat();
+        f_img = imread(imPath);
+        Mat f_img_cpy=f_img.clone();
+        Mat gray= new Mat();
+        opencv_imgproc.cvtColor(f_img_cpy,gray,Imgproc.COLOR_BGR2GRAY);
+        Mat blackAndWhite=new Mat();
+        opencv_imgproc.threshold(gray,blackAndWhite,200,255,opencv_imgproc.THRESH_BINARY);
+
+        Mat canny=new Mat();
+        opencv_imgproc.Canny(blackAndWhite, canny, 20, 170);
+        Mat hierarchy=new Mat();
+        MatVector contours=new MatVector();
+        opencv_imgproc.findContours(canny,contours,hierarchy,opencv_imgproc.RETR_EXTERNAL,opencv_imgproc.CHAIN_APPROX_NONE);
+        Random r = new Random();
+        for (int i=0;i< contours.size();i++){
+            Scalar black = Scalar.BLACK ;//there may be a problem he
+            opencv_imgproc.drawContours(f_img_cpy,contours,opencv_imgproc.FILLED,black);
+
+        }
+        Log.i("BEFORE CONVERSION", "The Following area is dangerous");
+        Mat gray_img=new Mat();
+        opencv_imgproc.cvtColor(f_img_cpy,gray_img,opencv_imgproc.COLOR_BGR2GRAY);
+
+        Mat furniture_mask=new Mat();
+        opencv_imgproc.threshold(gray_img,furniture_mask,200,255,opencv_imgproc.THRESH_BINARY);
+        Log.i("BEFORE CONVERSION", "The Following area is dangerous");
+        Mat notBlackWhite=new Mat();
+
+        opencv_core.bitwise_not(furniture_mask,notBlackWhite);
+        Mat furniture_with_black_back = new Mat();
+        opencv_core.bitwise_and(f_img,f_img,furniture_with_black_back,notBlackWhite);
+
+        File f_mask = new File(WorkingDirectory,"furniture_mask.png");
+        fur_mask = f_mask.toString();
+        File f_black_background = new File(WorkingDirectory,"furniture_with_black_background.png");
+        fur_black_background= f_black_background.toString();
+        imwrite(fur_mask, furniture_mask);
+        imwrite(fur_black_background,furniture_with_black_back);
+
+
+        //furniture_Analysis(furniture_path);
+        Mat roomImg= new Mat();
+        roomImg=imread(room_path);
+        Mat roomImg_cpy=roomImg.clone();
+        //roomImg_cpy = roomImg.adjustROI(top_left_y,bottom_right_y,top_left_x,bottom_right_x);
+       /* Log.i( "MATRIX WIDTH" , "width is  : "+roomImg_cpy.arrayWidth()+"height is"+roomImg_cpy.arrayHeight() )    ;
+        Log.i("DOWN RECTANGLE", "Rect is ( : left " + top_left_x + ", top: " + top_left_y + ", right : " + bottom_right_x+ ",bottom: " + bottom_right_y + ")");
+        Log.i("CROPPED", "height : "+ rectCrop.height()+"width :" + rectCrop.width());*/
+
+        Mat cropped=new Mat(roomImg_cpy,rectCrop);
+        /*
+        Log.i("HABBBBD", "height : "+ cropped.arrayHeight()+"width :" + cropped.arrayWidth());
+        Log.i("CROPPEDImg", "height : "+ cropped.arrayHeight()+"width :" + cropped.arrayWidth());*/
+        //cropped.adjustROI(top_left_y,bottom_right_y,top_left_x,bottom_right_x);
+        //cropped.apply(rectCrop);
+        //cropped.locateROI(rectCrop.size(),rectCrop.tl());
+        /****************************
+        roi = new File(WorkingDirectory,"roi.jpg");
+        String roi_p= roi.toString();
+        imwrite(roi_p,cropped);
+*****************************/
+        //Size rectSize = new Size(rect_width,rect_height);
+        //Size rectSize = new Size(cropped.size());
+        Size rectSize= new Size(cropped.arrayWidth(),cropped.arrayHeight());
+        //Log.i("SIZE", "height : "+ rectSize);
+        Log.i("RESIZE", "mat is resized : height "+ rectSize.height()+"mat is resized : width "+ rectSize.width());
+        Mat resized_f_mask =new Mat();
+        opencv_imgproc.resize(furniture_mask,resized_f_mask,rectSize);
+        Log.i("CROPPED SIZE", "mat is resized : height "+ cropped.arrayHeight()+"mat is resized : width "+ cropped.arrayWidth());
+
+
+        Log.i("MASK SIZE", "mat is resized : height "+ resized_f_mask.arrayHeight()+"mat is resized : width "+ resized_f_mask.arrayWidth());
+
+        Mat out = new Mat(rectSize);
+       /* if(cropped.size()==resized_f_mask.size()){
+            Log.i("RESIZE222", "mat is resized : height "+ cropped.arrayHeight()+"mat is resized : width "+ cropped.arrayWidth());
+        }*/
+
+
+        opencv_core.bitwise_and(cropped,cropped,out,resized_f_mask);
+        opencv_imgproc.resize(furniture_with_black_back,furniture_with_black_back,rectSize);
+
+
+        Mat out2=new Mat();
+        opencv_core.bitwise_or(furniture_with_black_back,out,out2);
+        //roomImg.put()
+        //Mat output_image=new Mat()
+        out2.copyTo(roomImg_cpy.apply(rectCrop));
+        roi = new File(WorkingDirectory,"roi.jpg");
+        String roi_p= roi.toString();
+        imwrite(roi_p,roomImg_cpy);
+
+        output_final = new File(WorkingDirectory,"output.jpg");
+        String final_out= output_final.toString();
+        imwrite(final_out,roomImg_cpy);
+    }
+
+
     //this function is to mask the image of furniture
     public void furniture_Analysis(String imPath){
 
@@ -352,14 +503,14 @@ public class AddFurniture extends AppCompatActivity {
         Mat blackWhite=new Mat();
         opencv_imgproc.threshold(gray_img,blackWhite,200,255,opencv_imgproc.THRESH_BINARY);
         Log.i("BEFORE CONVERSION", "The Following area is dangerous");
-         Mat notBlackWhite=new Mat();
+        Mat notBlackWhite=new Mat();
 
         opencv_core.bitwise_not(blackWhite,notBlackWhite);
         Mat furniture_with_black_back = new Mat();
         opencv_core.bitwise_and(f_img,f_img,furniture_with_black_back,notBlackWhite);
 
-        f_mask = new File(WorkingDirectory,"furniture_mask.png");
-        String fur_mask = f_mask.toString();
+        File f_mask = new File(WorkingDirectory,"furniture_mask.png");
+        fur_mask = f_mask.toString();
 /*
         Uri furniture_mask = Uri.parse("drawable://" + R.drawable.furniture_mask);
         String im1_name = "furniture_mask.png";
@@ -367,8 +518,8 @@ public class AddFurniture extends AppCompatActivity {
         String f_mask_path = AbsPath1.toString();
         Log.i("ABSOLUTE", f_mask_path);
 */
-        f_black_background = new File(WorkingDirectory,"furniture_with_black_background.png");
-        String fur_black_background= f_black_background.toString();
+        File f_black_background = new File(WorkingDirectory,"furniture_with_black_background.png");
+        fur_black_background= f_black_background.toString();
 /*
         Uri furniture_with_background = Uri.parse("drawable://" + R.drawable.furniture_with_black_background);
         String im2_name = "furniture_with_black_background.png";
@@ -376,57 +527,9 @@ public class AddFurniture extends AppCompatActivity {
         String f_with_black_background_path = AbsPath1.toString();
         Log.i("ABSOLUTE", f_mask_path);
 */
-        imwrite(fur_mask,furniture_with_black_back);
-        imwrite(fur_black_background,blackWhite);
+        imwrite(fur_mask, blackWhite);
+        imwrite(fur_black_background,furniture_with_black_back);
     }
-
-    public void AddFurniture(String room_path,String furniture_path){
-        furniture_Analysis(furniture_path);
-        Mat roomImg= new Mat();
-        roomImg=imread(room_path);
-        Mat roomImg_cpy=roomImg.clone();
-        //roomImg_cpy = roomImg.adjustROI(top_left_y,bottom_right_y,top_left_x,bottom_right_x);
-
-        /*
-        rectCrop.left=top_left_x;
-        rectCrop.bottom=bottom_right_y;
-        rectCrop.right=bottom_right_x;
-        rectCrop.top=top_left_y;*/
-        /*top_left_x=rectangle.left;
-        top_left_y=rectangle.top;
-        bottom_right_x=rectangle.right;
-        bottom_right_y=rectangle.bottom;
-        height = rectangle.height();
-        width = rectangle.width();
-        Toast.makeText(getApplicationContext(), "Rect is ( : left " + top_left_x + ", top: " + top_left_y + ", right : " + bottom_right_x+ ",bottom: " + bottom_right_y + ")",
-                Toast.LENGTH_LONG).show();
-
-         */
-        Log.i("DOWN RECTANGLE", "Rect is ( : left " + top_left_x + ", top: " + top_left_y + ", right : " + bottom_right_x+ ",bottom: " + bottom_right_y + ")");
-
-        //roomImg_cpy=roomImg_cpy.submat(rectCrop);
-        //opencv_imgproc.sub
-        //roomImg_cpy.
-        //opencv_core.operator();
-        //roomImg_cpy=roomImg(rectCrop);
-
-        //Mat cropped=new Mat(roomImg,rectCrop);
-        /*
-        Mat cropped=new Mat();
-        cropped=roomImg.clone();
-        //cropped.adjustROI(top_left_y,bottom_right_y,top_left_x,bottom_right_x);
-        //cropped.apply(rectCrop);
-        cropped.locateROI(rectCrop.size(),rectCrop.tl());*/
-        roi = new File(WorkingDirectory,"roi.jpg");
-        String roi_p= roi.toString();
-        imwrite(roi_p,roomImg);
-
-        //roomImg_cpy= roomImg[100:250,50:70] ;
-        //roomImg_cpy= roomImg[100][50];
-    }
-
-
-
 
 
 

@@ -7,23 +7,24 @@
     android:layout_height="match_parent"
     android:orientation="vertical"
     tools:context=".MainActivity">
-<RelativeLayout
-    android:layout_width="match_parent"
-    android:layout_height="250dp">
 
-    <ImageView
-        android:id="@+id/imageView"
+    <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="250dp"
-        app:srcCompat="@drawable/ic_launcher_foreground"
-        tools:ignore="VectorDrawableCompat" />
-    <com.example.decorateyourhome.DragRectView
-        android:id="@+id/dragRect"
-        android:layout_width="match_parent"
-        android:layout_height="250dp" />
-</RelativeLayout>
+        android:id="@+id/layout"
+        >
 
-
+        <ImageView
+            android:id="@+id/imageView"
+            android:layout_width="match_parent"
+            android:layout_height="250dp"
+            app:srcCompat="@drawable/ic_launcher_foreground"
+            tools:ignore="VectorDrawableCompat" />
+        <com.example.decorateyourhome.DragRectView
+            android:id="@+id/dragRect"
+            android:layout_width="match_parent"
+            android:layout_height="250dp" />
+    </RelativeLayout>
 
     <Button
         android:id="@+id/button"
