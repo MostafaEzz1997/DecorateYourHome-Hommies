@@ -1,9 +1,5 @@
-import argparse
 import cv2
 import numpy as np
-
-
-
 
 refPt = []    # initialize the list of reference points and boolean indicating
 cropping = False     # whether cropping is being performed or not
@@ -24,16 +20,10 @@ def click_and_crop(event, x, y, flags, param): #cropping function
         # the cropping operation is finished
         refPt.append((x, y))
         cropping = False
-        # draw a rectangle around the region of interest
-#        cv2.rectangle(image, refPt[0], refPt[1], (0, 255, 0), 2)
-#        cv2.imshow("image", image)
-
-# construct the argument parser and parse the arguments
 
 clone = image.copy()
 cv2.namedWindow("image")
 cv2.setMouseCallback("image", click_and_crop)
-# keep looping until the 'q' key is pressed
 while True:
     # display the image and wait for a keypress
     cv2.imshow("image", image)
@@ -45,7 +35,7 @@ while True:
     elif key == ord("c"):
        break
 # if there are two reference points, then crop the region of interest
-# from teh image and display it
+# from the image and display it
 roi = clone[refPt[0][1]:refPt[1][1], refPt[0][0]:refPt[1][0]] #the cropped image
 
 red_image = cv2.imread("red_color.jpg") #image of the desired decoration to be added
