@@ -60,9 +60,7 @@ def coloring(image):
 	
 	cv2.imshow("image", image)
 	cv2.waitKey()
-	
-	cv2.destroyAllWindows()
-	
+
 # take the image and apply the coloring function on it
 image = cv2.imread('G:/Try_Stitching/images/scottsdale/IMG_1786-2.jpg')
 coloring(image)
