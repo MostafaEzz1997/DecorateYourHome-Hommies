@@ -48,6 +48,3 @@ image[y_offset:y_offset+resized.shape[0], x_offset:x_offset+resized.shape[1]] = 
 
 cv2.imshow("image", image) #show the final image
 cv2.waitKey()
-
-# close all open windows
-cv2.destroyAllWindows()
