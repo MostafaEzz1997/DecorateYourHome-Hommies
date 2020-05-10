@@ -14,6 +14,7 @@ import android.os.Environment;
 import android.provider.DocumentsContract;
 import android.text.Layout;
 import android.view.MotionEvent;
+import android.view.ViewTreeObserver;
 import android.widget.ImageView;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
@@ -31,6 +32,7 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.RelativeLayout;
 import android.widget.Toast;
 
 import java.io.File;
@@ -108,12 +110,20 @@ public class AddFurniture extends AppCompatActivity {
         button1.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (ActivityCompat.checkSelfPermission(AddFurniture.this, Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
-                    ActivityCompat.requestPermissions(AddFurniture.this, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, PICK_IMAGE);
+
+                if(rect_width>0&&rect_width>0) {
+                    if (ActivityCompat.checkSelfPermission(AddFurniture.this, Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+                        ActivityCompat.requestPermissions(AddFurniture.this, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, PICK_IMAGE);
 //                    return;
-                } else {
-                    openGallery();
+                    } else {
+                        openGallery();
+                    }
                 }
+                else {
+                    Toast.makeText(getApplicationContext(), "please select any area in the image",
+                            Toast.LENGTH_LONG).show();
+                }
+
             }
         });
         Button button = findViewById(R.id.button);
@@ -130,15 +140,32 @@ public class AddFurniture extends AppCompatActivity {
         });
         view = (DragRectView) findViewById(R.id.dragRect);
         myImage = (ImageView) findViewById(R.id.imageView);
-        //Layout layout=(Layout)findViewById(R.id.layout);
-        //Layout layout=(Layout)findViewById(R.id.constrain);
-        //Layout layout =  findViewById(R.id.constrain);
+        final RelativeLayout relativeLayout = (RelativeLayout)findViewById(R.id.layout);
+        ViewTreeObserver viewTreeObserver = relativeLayout.getViewTreeObserver();
+        viewTreeObserver.addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
+            @Override
+            public void onGlobalLayout() {
+                relativeLayout.getViewTreeObserver().removeGlobalOnLayoutListener(this);
+                layout_width  = relativeLayout.getMeasuredWidth();
+                layout_hight = relativeLayout.getMeasuredHeight();
+
+            }
+        });
         if (null != view) {
             view.setOnUpCallback(new DragRectView.OnUpCallback() {
                 @Override
                 public void onRectFinished(final Rect rect) {
                     //rectPoints[0][0]=  rect.left;
 
+                    top_left_x=(int)(((double)rect.left/(double)layout_width)*img_width);
+                    top_left_y=(int)(((double)rect.top/(double)layout_hight)*img_height);
+                    bottom_right_x=rect.right;
+                    bottom_right_y=rect.bottom;
+                    //int h = Math.abs(img_height-)
+
+                    rect_height = (int)(((double)rect.height()/(double)layout_hight)*img_height);
+                    rect_width =(int)(((double) rect.width()/(double)layout_width)*img_width);
+/*
                     top_left_x=(int)(((double)rect.left/(double)1090)*img_width);
                     top_left_y=(int)(((double)rect.top/(double)700)*img_height);
                     bottom_right_x=rect.right;
@@ -147,25 +174,13 @@ public class AddFurniture extends AppCompatActivity {
 
                     rect_height = (int)(((double)rect.height()/(double)530)*img_height);
                     rect_width =(int)(((double) rect.width()/(double)1000)*img_width);
-
-                    //rect_height=(int)Math.abs(bottom_right_x-top_left_x);
-                    //rect_height = (int) Math.abs(rect.height()-Math.abs(rect.height()-img_height));
-                    //rect_width = (int) Math.abs(rect.width()-Math.abs(rect.width()-img_width));
-                    //rect_width =(int)(((double) rect.width()/(double)1070)*img_width);
-                    layout_hight = view.getLayoutParams().height;
-                    layout_width = view.getLayoutParams().width;
+                    */
 
 
                     Log.i("LAYOUT WIDTH","width : "+layout_width +" height : "+ layout_hight);
 
                     rectCrop= new org.bytedeco.opencv.opencv_core.Rect(top_left_x,top_left_y,rect_width,rect_height);
-                    //rectCrop= new org.bytedeco.opencv.opencv_core.Rect(198,198,rect_width,rect_height);
 
-/*
-                    Toast.makeText(getApplicationContext(), "size is (" + rectCrop.size() + ", " + rectCrop.tl() + ")",
-                            Toast.LENGTH_LONG).show();
-
-*/
                     Toast.makeText(getApplicationContext(), "Rect is (" + rect.left + ", " + rect.top + ", " + rect.right + ", " + rect.bottom + ")",
                             Toast.LENGTH_LONG).show();
 

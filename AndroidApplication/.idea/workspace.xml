@@ -16,7 +16,9 @@
       <change afterPath="$PROJECT_DIR$/app/src/main/res/drawable/result.jpg" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app/build.gradle" beforeDir="false" afterPath="$PROJECT_DIR$/app/build.gradle" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app/src/main/AndroidManifest.xml" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/AndroidManifest.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/example/decorateyourhome/AddColor.java" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/example/decorateyourhome/AddColor.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app/src/main/java/com/example/decorateyourhome/AddFurniture.java" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/example/decorateyourhome/AddFurniture.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/res/layout/color_add.xml" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/res/layout/color_add.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app/src/main/res/layout/furniture_add.xml" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/res/layout/furniture_add.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/gradle.properties" beforeDir="false" afterPath="$PROJECT_DIR$/gradle.properties" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/gradlew" beforeDir="false" afterPath="$PROJECT_DIR$/gradlew" afterDir="false" />
