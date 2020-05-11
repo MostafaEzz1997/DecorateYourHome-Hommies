@@ -52,6 +52,7 @@ import java.util.List;
 import java.util.Random;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.ContextCompat;
 
 import org.bytedeco.flycapture.FlyCapture2.Utilities;
 import org.bytedeco.libfreenect2.Frame;
@@ -78,6 +79,8 @@ import org.opencv.imgproc.Imgproc;
 import org.opencv.ml.TrainData;
 import org.opencv.utils.Converters;
 
+import yuku.ambilwarna.AmbilWarnaDialog;
+
 import static org.bytedeco.opencv.global.opencv_imgcodecs.imread;
 import static org.bytedeco.opencv.global.opencv_imgcodecs.imwrite;
 import static org.bytedeco.opencv.opencv_core.AbstractCvScalar.BLUE;
@@ -88,7 +91,7 @@ import static org.bytedeco.opencv.opencv_stitching.Stitcher.PANORAMA;
 
 public class AddColor extends AppCompatActivity {
     ImageView myImage;
-    Button button1;
+    Button button1,button2;
     private static final int PICK_IMAGE=100;
     final int REQUEST_EXTERNAL_STORAGE = 200;
     DragRectView view;
@@ -103,12 +106,15 @@ public class AddColor extends AppCompatActivity {
     File roi,output_final;
     int top_left_x,top_left_y,bottom_right_x,bottom_right_y;
     int rect_height,rect_width,img_height,img_width,layout_hight,layout_width;
+    int DefaultColor;
+    boolean colorChoosen=false;
     org.bytedeco.opencv.opencv_core.Rect rectCrop ;
+
     @SuppressLint("UnsafeDynamicallyLoadedCode")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.furniture_add);
+        setContentView(R.layout.color_add);
         //System.load("C:\\OpenCV\\opencv\\build\\java\\x64\\opencv_java349.dll");
 
         /*We are making a directory to save the result images in the cache*/
@@ -121,29 +127,34 @@ public class AddColor extends AppCompatActivity {
                 WorkingDirectory.mkdirs();
             }
         }
+        //mDefaultColor = ContextCompat.getColor(AddColor.this, R.color.colorPrimary);
 
         button1 = (Button)findViewById(R.id.button1);
         button1.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                if(rect_height>0&&rect_width>0){
+                    openColorPicker();
+                        //colorPicker.show();
+                }
+                else {
+                    Toast.makeText(getApplicationContext(), "please select any area in the image",
+                            Toast.LENGTH_LONG).show();
+                }
+            }
+        });
+        button2 = (Button)findViewById(R.id.button2);
+        button2.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
                 final ImageView imageView = findViewById(R.id.image_view);
-
                 if(rect_height>0&&rect_width>0){
                     ColorTheRoom(SroomPath);
-                    //ColorRoom(SroomPath);
-                    //cropRoom(SroomPath);
                     if (roi.exists()) {
                         Log.i("Exist", "img exists");
                         Bitmap myBitmap = BitmapFactory.decodeFile(roi.getAbsolutePath());
-
-                        //Bitmap bm ;
-
-                        //bm = changeBitmapColor(myBitmap,0x00ff0000);
-                        //Bitmap myBitmap = BitmapFactory.decodeFile(f_black_background.getAbsolutePath());
                         imageView.setImageBitmap(myBitmap);
-                        //STITCHING_OK = true;
-                        //Toast.makeText(this, "select your area", Toast.LENGTH_LONG).show();
-                        //final DragRectView view = (DragRectView) findViewById(R.id.dragRect);
+
                     }
                 }
                 else {
@@ -185,12 +196,7 @@ public class AddColor extends AppCompatActivity {
 /*
                     top_left_x=(int)(((double)rect.left/(double)1090)*img_width);
                     top_left_y=(int)(((double)rect.top/(double)1000)*img_height);
-                    bottom_right_x=rect.right;
-                    bottom_right_y=rect.bottom;
-                    //int h = Math.abs(img_height-)
 
-                    rect_height = (int)(((double)rect.height()/(double)530)*img_height);
-                    rect_width =(int)(((double) rect.width()/(double)1050)*img_width);
 */
                     top_left_x=(int)(((double)rect.left/(double)layout_width)*img_width);
                     top_left_y=(int)(((double)rect.top/(double)layout_hight)*img_height);
@@ -205,9 +211,6 @@ public class AddColor extends AppCompatActivity {
                     //rect_height = (int) Math.abs(rect.height()-Math.abs(rect.height()-img_height));
                     //rect_width = (int) Math.abs(rect.width()-Math.abs(rect.width()-img_width));
                     //rect_width =(int)(((double) rect.width()/(double)1070)*img_width);
-                    //layout_hight = view.getLayoutParams().height;
-                    //layout_width = view.getLayoutParams().width;
-
 
                     Log.i("LAYOUT WIDTH","width : "+layout_width +" height : "+ layout_hight);
 
@@ -221,12 +224,21 @@ public class AddColor extends AppCompatActivity {
             Log.i("RECTANGLE", "Rect is ( : left " + top_left_x + ", top: " + top_left_y + ", right : " + bottom_right_x+ ",bottom: " + bottom_right_y + ")");
         }
     }
-    /*This function is to get one image from the gallery */
-    private void openGallery(){
-        Intent gallery =new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.INTERNAL_CONTENT_URI);
-        gallery.setType("image/*");
-        startActivityForResult(gallery,PICK_IMAGE);
+    public void openColorPicker() {
+        AmbilWarnaDialog colorPicker = new AmbilWarnaDialog(this, DefaultColor, new AmbilWarnaDialog.OnAmbilWarnaListener() {
+            @Override
+            public void onCancel(AmbilWarnaDialog dialog) {
+            }
+            @Override
+            public void onOk(AmbilWarnaDialog dialog, int color) {
+                DefaultColor = color;
+                colorChoosen=true;
+                //relativeLayout.setBackgroundColor(mDefaultColor);
+            }
+        });
+        colorPicker.show();
     }
+
     /*This function is to get one multiple images from the gallery */
     public void launchGalleryIntent() {
         Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
@@ -391,6 +403,7 @@ public class AddColor extends AppCompatActivity {
         return Uri.parse(path);
     }
     public void ColorTheRoom(String room_path){
+
         Mat roomImg= new Mat();
         roomImg=imread(room_path);
         Mat roomImg_cpy=roomImg.clone();
@@ -402,7 +415,7 @@ public class AddColor extends AppCompatActivity {
 
         Bitmap myBitmap = BitmapFactory.decodeFile(roi.getAbsolutePath());
         Bitmap bm ;
-        myBitmap = changeBitmapColor(myBitmap,0x00ff0000);
+        myBitmap = changeBitmapColor(myBitmap,DefaultColor);
 
         try (FileOutputStream out = new FileOutputStream(roi)) {
             myBitmap.compress(Bitmap.CompressFormat.PNG, 100, out); // bmp is your Bitmap instance

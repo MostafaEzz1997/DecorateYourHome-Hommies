@@ -10,14 +10,19 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="11445e86-564c-4918-8115-b095ef359669" name="Default Changelist" comment="">
+      <change afterPath="$PROJECT_DIR$/app/src/main/java/com/example/decorateyourhome/AddDecore.java" afterDir="false" />
       <change afterPath="$PROJECT_DIR$/app/src/main/java/com/example/decorateyourhome/DragRectView.java" afterDir="false" />
       <change afterPath="$PROJECT_DIR$/app/src/main/res/drawable/furniture_mask.png" afterDir="false" />
       <change afterPath="$PROJECT_DIR$/app/src/main/res/drawable/furniture_with_black_background.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/app/src/main/res/drawable/home1.png" afterDir="false" />
       <change afterPath="$PROJECT_DIR$/app/src/main/res/drawable/result.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/app/src/main/res/layout/decore_add.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app/build.gradle" beforeDir="false" afterPath="$PROJECT_DIR$/app/build.gradle" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app/src/main/AndroidManifest.xml" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/AndroidManifest.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app/src/main/java/com/example/decorateyourhome/AddColor.java" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/example/decorateyourhome/AddColor.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app/src/main/java/com/example/decorateyourhome/AddFurniture.java" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/example/decorateyourhome/AddFurniture.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/example/decorateyourhome/MainActivity.java" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/example/decorateyourhome/MainActivity.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/res/layout/activity_main.xml" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/res/layout/activity_main.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app/src/main/res/layout/color_add.xml" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/res/layout/color_add.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app/src/main/res/layout/furniture_add.xml" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/res/layout/furniture_add.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/gradle.properties" beforeDir="false" afterPath="$PROJECT_DIR$/gradle.properties" afterDir="false" />
@@ -45,6 +50,7 @@
   <component name="FileTemplateManagerImpl">
     <option name="RECENT_TEMPLATES">
       <list>
+        <option value="layoutResourceFile" />
         <option value="Class" />
       </list>
     </option>
@@ -56,7 +62,7 @@
   <component name="PropertiesComponent">
     <property name="android.sdk.path" value="$USER_HOME$/AppData/Local/Android/Sdk" />
     <property name="com.intellij.ide.scratch.LRUPopupBuilder$1/New Scratch File" value="Properties" />
-    <property name="last_opened_file_path" value="$PROJECT_DIR$/../SelectAreaInImage" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$/app/src/main/res/drawable" />
     <property name="project.structure.last.edited" value="SDK Location" />
     <property name="project.structure.proportion" value="0.17" />
     <property name="project.structure.side.proportion" value="0.0" />

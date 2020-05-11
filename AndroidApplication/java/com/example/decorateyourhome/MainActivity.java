@@ -13,6 +13,7 @@ import android.widget.Button;
 public class MainActivity extends AppCompatActivity {
     Button color ;
     Button furniture;
+    Button decore;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -26,6 +27,7 @@ public class MainActivity extends AppCompatActivity {
                 startActivity(k);
             }
         });
+
         furniture = (Button)findViewById(R.id.addFurniture);
         furniture.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -34,6 +36,16 @@ public class MainActivity extends AppCompatActivity {
                 startActivity(j);
             }
         });
+
+        decore =(Button)findViewById(R.id.addDecoration);
+        decore.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent i = new Intent(MainActivity.this, AddDecore.class);
+                startActivity(i);
+            }
+        });
+
 
     }
 
