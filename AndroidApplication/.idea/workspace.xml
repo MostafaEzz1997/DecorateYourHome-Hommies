@@ -14,7 +14,7 @@
       <change afterPath="$PROJECT_DIR$/app/src/main/java/com/example/decorateyourhome/DragRectView.java" afterDir="false" />
       <change afterPath="$PROJECT_DIR$/app/src/main/res/drawable/furniture_mask.png" afterDir="false" />
       <change afterPath="$PROJECT_DIR$/app/src/main/res/drawable/furniture_with_black_background.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/app/src/main/res/drawable/home1.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/app/src/main/res/drawable/home3.png" afterDir="false" />
       <change afterPath="$PROJECT_DIR$/app/src/main/res/drawable/result.jpg" afterDir="false" />
       <change afterPath="$PROJECT_DIR$/app/src/main/res/layout/decore_add.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app/build.gradle" beforeDir="false" afterPath="$PROJECT_DIR$/app/build.gradle" afterDir="false" />
@@ -22,9 +22,12 @@
       <change beforePath="$PROJECT_DIR$/app/src/main/java/com/example/decorateyourhome/AddColor.java" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/example/decorateyourhome/AddColor.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app/src/main/java/com/example/decorateyourhome/AddFurniture.java" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/example/decorateyourhome/AddFurniture.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app/src/main/java/com/example/decorateyourhome/MainActivity.java" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/example/decorateyourhome/MainActivity.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/res/drawable/home.png" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/app/src/main/res/layout/activity_main.xml" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/res/layout/activity_main.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app/src/main/res/layout/color_add.xml" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/res/layout/color_add.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app/src/main/res/layout/furniture_add.xml" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/res/layout/furniture_add.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/res/values/colors.xml" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/res/values/colors.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/res/values/styles.xml" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/res/values/styles.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/gradle.properties" beforeDir="false" afterPath="$PROJECT_DIR$/gradle.properties" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/gradlew" beforeDir="false" afterPath="$PROJECT_DIR$/gradlew" afterDir="false" />
     </list>
@@ -55,11 +58,17 @@
       </list>
     </option>
   </component>
+  <component name="GenerateSignedApkSettings">
+    <option name="BUILD_TARGET_KEY" value="apk" />
+  </component>
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
   <component name="ProjectId" id="1bSERG07JBycGkAwYimvMXf4luG" />
   <component name="PropertiesComponent">
+    <property name="ApkExportedModule" value="app" />
+    <property name="DeviceAndSnapshotComboBoxAction.selectedDevice" value="3de0c843" />
+    <property name="DeviceAndSnapshotComboBoxAction.selectionTime" value="2020-05-11T12:02:07.536Z" />
     <property name="android.sdk.path" value="$USER_HOME$/AppData/Local/Android/Sdk" />
     <property name="com.intellij.ide.scratch.LRUPopupBuilder$1/New Scratch File" value="Properties" />
     <property name="last_opened_file_path" value="$PROJECT_DIR$/app/src/main/res/drawable" />

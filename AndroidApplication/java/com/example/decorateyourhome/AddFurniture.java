@@ -1,19 +1,14 @@
 package com.example.decorateyourhome;
 
-import android.annotation.SuppressLint;
 import android.content.ClipData;
-import android.content.ContentResolver;
 import android.content.ContentUris;
 import android.content.Context;
 import android.database.Cursor;
-import android.graphics.Color;
 import android.graphics.Rect;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.provider.DocumentsContract;
-import android.text.Layout;
-import android.view.MotionEvent;
 import android.view.ViewTreeObserver;
 import android.widget.ImageView;
 import androidx.annotation.Nullable;
@@ -26,47 +21,31 @@ import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
-import android.os.Bundle;
 import android.provider.MediaStore;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
-import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.Toast;
 
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
-import java.io.IOException;
 import java.io.InputStream;
-import java.net.URI;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Random;
-
-import androidx.appcompat.app.AppCompatActivity;
-
-import org.bytedeco.librealsense.context;
 import org.bytedeco.opencv.global.opencv_core;
 import org.bytedeco.opencv.global.opencv_imgproc;
 import org.bytedeco.opencv.opencv_core.Scalar;
 import org.bytedeco.opencv.opencv_core.Size;
-import org.bytedeco.opencv.opencv_core.UMat;
-import org.bytedeco.opencv.opencv_cudaimgproc.CannyEdgeDetector;
-import org.opencv.android.Utils;
-import org.opencv.core.Core;
-import org.opencv.core.CvType;
-//import org.opencv.core.Mat;
 
-
-import org.bytedeco.javacv.OpenCVFrameConverter;
 import org.bytedeco.opencv.opencv_core.Mat;
 import org.bytedeco.opencv.opencv_core.MatVector;
 import org.bytedeco.opencv.opencv_stitching.Stitcher;
-import org.opencv.core.Range;
 import org.opencv.imgproc.Imgproc;
-import org.opencv.ml.TrainData;
 
 import static org.bytedeco.opencv.global.opencv_imgcodecs.imread;
 import static org.bytedeco.opencv.global.opencv_imgcodecs.imwrite;
@@ -85,7 +64,7 @@ public class AddFurniture extends AppCompatActivity {
     String SroomPath;
     String fur_black_background;
     String fur_mask;
-
+    boolean furnitureAdded=false;
     File roi,output_final;
     int top_left_x,top_left_y,bottom_right_x,bottom_right_y;
     int rect_height,rect_width,img_height,img_width,layout_hight,layout_width;
@@ -122,6 +101,23 @@ public class AddFurniture extends AppCompatActivity {
                 else {
                     Toast.makeText(getApplicationContext(), "please select any area in the image",
                             Toast.LENGTH_LONG).show();
+                }
+
+            }
+        });
+        Button saveImg=findViewById(R.id.button3);
+        saveImg.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if(furnitureAdded){
+                    Bitmap myBitmap = BitmapFactory.decodeFile(roi.getAbsolutePath());
+                    saveTempBitmap(myBitmap);
+                    furnitureAdded=false;
+                }
+                else{
+                    Toast.makeText(getApplicationContext(), "please select Image and add color",
+                            Toast.LENGTH_LONG).show();
+
                 }
 
             }
@@ -163,7 +159,7 @@ public class AddFurniture extends AppCompatActivity {
                     bottom_right_y=rect.bottom;
                     //int h = Math.abs(img_height-)
 
-                    rect_height = (int)(((double)rect.height()/(double)layout_hight)*img_height);
+                    rect_height = (int)((((double)rect.height()/(double)layout_hight)*img_height)+5);
                     rect_width =(int)(((double) rect.width()/(double)layout_width)*img_width);
 /*
                     top_left_x=(int)(((double)rect.left/(double)1090)*img_width);
@@ -177,16 +173,15 @@ public class AddFurniture extends AppCompatActivity {
                     */
 
 
-                    Log.i("LAYOUT WIDTH","width : "+layout_width +" height : "+ layout_hight);
+                  //  Log.i("LAYOUT WIDTH","width : "+layout_width +" height : "+ layout_hight);
 
                     rectCrop= new org.bytedeco.opencv.opencv_core.Rect(top_left_x,top_left_y,rect_width,rect_height);
 
-                    Toast.makeText(getApplicationContext(), "Rect is (" + rect.left + ", " + rect.top + ", " + rect.right + ", " + rect.bottom + ")",
-                            Toast.LENGTH_LONG).show();
+                //    Toast.makeText(getApplicationContext(), "Rect is (" + rect.left + ", " + rect.top + ", " + rect.right + ", " + rect.bottom + ")",Toast.LENGTH_LONG).show();
 
                 }
             });
-            Log.i("RECTANGLE", "Rect is ( : left " + top_left_x + ", top: " + top_left_y + ", right : " + bottom_right_x+ ",bottom: " + bottom_right_y + ")");
+       //     Log.i("RECTANGLE", "Rect is ( : left " + top_left_x + ", top: " + top_left_y + ", right : " + bottom_right_x+ ",bottom: " + bottom_right_y + ")");
         }
         //myImage.setOnTouchListener(AddFurniture.this);
     }
@@ -257,14 +252,14 @@ public class AddFurniture extends AppCompatActivity {
                         e.printStackTrace();
                     }
 
-                    Log.d("RESULT", "path os passed");
+             //       Log.d("RESULT", "path os passed");
                     String spath = imageUri.toString() ;// "file:///mnt/sdcard/FileName.mp3"
                     String path = getPath(getApplicationContext(), imageUri);
                     //Log.i("First Path", path);
                     //Log.i("SECOND", spath);
                     //img = imread(imageUri.getPath());
                     img = imread(path);
-                    Log.d("READ", "message is read");
+            //        Log.d("READ", "message is read");
                     imgs.push_back(img);
                 }
 
@@ -284,11 +279,11 @@ public class AddFurniture extends AppCompatActivity {
                 int status = stitcher.stitch(imgs, pano);
                 if (status != Stitcher.OK) {
                     //System.out.println("Can't stitch images, error code = " + status);
-                    Log.i("TAG", "Can't stitch images, error code = " + status);
+            //        Log.i("TAG", "Can't stitch images, error code = " + status);
                 } else {
                     // then stitching is ok
 
-                    Log.i("TAG", "OK");
+           //         Log.i("TAG", "OK");
                     imwrite(SroomPath, pano);
                     //File imgFile = new File(result_name);
                     //Log.i("imgfile", "img file is done");
@@ -300,7 +295,7 @@ public class AddFurniture extends AppCompatActivity {
                         img_width=myBitmap.getWidth();
                         img_height=myBitmap.getHeight();
 
-                    Log.i("IMAGE WIDTH","width : "+img_width +" height : "+ img_height);
+            //        Log.i("IMAGE WIDTH","width : "+img_width +" height : "+ img_height);
                         Toast.makeText(this, "select your area", Toast.LENGTH_LONG).show();
                         //final DragRectView view = (DragRectView) findViewById(R.id.dragRect);
                     }
@@ -315,7 +310,7 @@ public class AddFurniture extends AppCompatActivity {
                     //single image selected
                    // ImageView myImage = (ImageView) findViewById(R.id.imageView);
                     Uri imageUri = data.getData();
-                    Log.d("URI", imageUri.toString());
+           //         Log.d("URI", imageUri.toString());
                     try {
 
                         InputStream inputStream = getContentResolver().openInputStream(imageUri);
@@ -326,14 +321,14 @@ public class AddFurniture extends AppCompatActivity {
                         SroomPath = getPath(getApplicationContext(), imageUri);
                         String spath = imageUri.toString() ;// "file:///mnt/sdcard/FileName.mp3"
                        // String path = getPath(getApplicationContext(), imageUri);
-                        Log.i("First Path", SroomPath);
-                        Log.i("SECOND", spath);
+           //             Log.i("First Path", SroomPath);
+           //             Log.i("SECOND", spath);
                         img_width=bitmap.getWidth();
                         img_height=bitmap.getHeight();
                         // roomPath=new File(imageUri.get());
                         //roomPath=path.parse
 
-                        Log.i("Furn Path", "Not furn area");
+           //             Log.i("Furn Path", "Not furn area");
                     } catch (FileNotFoundException e) {
                         e.printStackTrace();
                     }
@@ -342,7 +337,7 @@ public class AddFurniture extends AppCompatActivity {
         }
         // to add furniture image
         else if ( resultCode == RESULT_OK) {
-            Log.i("FURNITURE", "Furniture Area is entered ");
+      //      Log.i("FURNITURE", "Furniture Area is entered ");
             final ImageView imageView = findViewById(R.id.image_view);
             imageUri = data.getData();
             final InputStream imageStream;
@@ -354,7 +349,7 @@ public class AddFurniture extends AppCompatActivity {
 */
                 //String spath = imageUri.toString();// "file:///mnt/sdcard/FileName.mp3"
                 String path = getPath(getApplicationContext(), imageUri);
-                Log.i("Furn Path", path);
+        //        Log.i("Furn Path", path);
                 //Log.i("Furn SECOND", spath);
                 //furniture_Analysis(path);
 
@@ -370,12 +365,14 @@ public class AddFurniture extends AppCompatActivity {
                 }*/
 
                 if (roi.exists()) {
-                    Log.i("Exist", "img exists");
+          //          Log.i("Exist", "img exists");
                     Bitmap myBitmap = BitmapFactory.decodeFile(roi.getAbsolutePath());
                     //Bitmap myBitmap = BitmapFactory.decodeFile(f_black_background.getAbsolutePath());
                     imageView.setImageBitmap(myBitmap);
+
+                    furnitureAdded=true;
                     //STITCHING_OK = true;
-                    Toast.makeText(this, "select your area", Toast.LENGTH_LONG).show();
+                    //Toast.makeText(this, "select your area", Toast.LENGTH_LONG).show();
                     //final DragRectView view = (DragRectView) findViewById(R.id.dragRect);
                 }
 
@@ -390,6 +387,7 @@ public class AddFurniture extends AppCompatActivity {
 
     public void AddFurniture(String room_path,String imPath){
         //reading the original furniture image given from the user
+        //this part from the function is to mask the image of furniture
         Mat f_img = new Mat();
         f_img = imread(imPath);
         Mat f_img_cpy=f_img.clone();
@@ -415,7 +413,7 @@ public class AddFurniture extends AppCompatActivity {
 
         Mat furniture_mask=new Mat();
         opencv_imgproc.threshold(gray_img,furniture_mask,200,255,opencv_imgproc.THRESH_BINARY);
-        Log.i("BEFORE CONVERSION", "The Following area is dangerous");
+   //     Log.i("BEFORE CONVERSION", "The Following area is dangerous");
         Mat notBlackWhite=new Mat();
 
         opencv_core.bitwise_not(furniture_mask,notBlackWhite);
@@ -430,7 +428,7 @@ public class AddFurniture extends AppCompatActivity {
         imwrite(fur_black_background,furniture_with_black_back);
 
 
-        //furniture_Analysis(furniture_path);
+        //furniture_Analysis has ended ;
         Mat roomImg= new Mat();
         roomImg=imread(room_path);
         Mat roomImg_cpy=roomImg.clone();
@@ -441,7 +439,6 @@ public class AddFurniture extends AppCompatActivity {
 
         Mat cropped=new Mat(roomImg_cpy,rectCrop);
         /*
-        Log.i("HABBBBD", "height : "+ cropped.arrayHeight()+"width :" + cropped.arrayWidth());
         Log.i("CROPPEDImg", "height : "+ cropped.arrayHeight()+"width :" + cropped.arrayWidth());*/
         //cropped.adjustROI(top_left_y,bottom_right_y,top_left_x,bottom_right_x);
         //cropped.apply(rectCrop);
@@ -455,13 +452,13 @@ public class AddFurniture extends AppCompatActivity {
         //Size rectSize = new Size(cropped.size());
         Size rectSize= new Size(cropped.arrayWidth(),cropped.arrayHeight());
         //Log.i("SIZE", "height : "+ rectSize);
-        Log.i("RESIZE", "mat is resized : height "+ rectSize.height()+"mat is resized : width "+ rectSize.width());
+   //     Log.i("RESIZE", "mat is resized : height "+ rectSize.height()+"mat is resized : width "+ rectSize.width());
         Mat resized_f_mask =new Mat();
         opencv_imgproc.resize(furniture_mask,resized_f_mask,rectSize);
-        Log.i("CROPPED SIZE", "mat is resized : height "+ cropped.arrayHeight()+"mat is resized : width "+ cropped.arrayWidth());
+   //     Log.i("CROPPED SIZE", "mat is resized : height "+ cropped.arrayHeight()+"mat is resized : width "+ cropped.arrayWidth());
 
 
-        Log.i("MASK SIZE", "mat is resized : height "+ resized_f_mask.arrayHeight()+"mat is resized : width "+ resized_f_mask.arrayWidth());
+   //     Log.i("MASK SIZE", "mat is resized : height "+ resized_f_mask.arrayHeight()+"mat is resized : width "+ resized_f_mask.arrayWidth());
 
         Mat out = new Mat(rectSize);
        /* if(cropped.size()==resized_f_mask.size()){
@@ -488,64 +485,47 @@ public class AddFurniture extends AppCompatActivity {
     }
 
 
-    //this function is to mask the image of furniture
-    public void furniture_Analysis(String imPath){
 
-        //reading the original furniture image given from the user
-        Mat f_img = new Mat();
-        f_img = imread(imPath);
-        Mat f_img_cpy=f_img.clone();
-        Mat gray= new Mat();
-        opencv_imgproc.cvtColor(f_img_cpy,gray,Imgproc.COLOR_BGR2GRAY);
-        Mat blackAndWhite=new Mat();
-        opencv_imgproc.threshold(gray,blackAndWhite,200,255,opencv_imgproc.THRESH_BINARY);
-
-        Mat canny=new Mat();
-        opencv_imgproc.Canny(blackAndWhite, canny, 20, 170);
-        Mat hierarchy=new Mat();
-        MatVector contours=new MatVector();
-        opencv_imgproc.findContours(canny,contours,hierarchy,opencv_imgproc.RETR_EXTERNAL,opencv_imgproc.CHAIN_APPROX_NONE);
-        Random r = new Random();
-        for (int i=0;i< contours.size();i++){
-            Scalar black = Scalar.BLACK ;//there may be a problem he
-            opencv_imgproc.drawContours(f_img_cpy,contours,opencv_imgproc.FILLED,black);
-
+    public void saveTempBitmap(Bitmap bitmap) {
+        if (isExternalStorageWritable()) {
+            saveImage(bitmap);
+        }else{
+            Toast.makeText(AddFurniture.this,"Memory is not writable",Toast.LENGTH_LONG).show();
+            //prompt the user or do something
         }
-        Log.i("BEFORE CONVERSION", "The Following area is dangerous");
-        Mat gray_img=new Mat();
-        opencv_imgproc.cvtColor(f_img_cpy,gray_img,opencv_imgproc.COLOR_BGR2GRAY);
-
-        Mat blackWhite=new Mat();
-        opencv_imgproc.threshold(gray_img,blackWhite,200,255,opencv_imgproc.THRESH_BINARY);
-        Log.i("BEFORE CONVERSION", "The Following area is dangerous");
-        Mat notBlackWhite=new Mat();
-
-        opencv_core.bitwise_not(blackWhite,notBlackWhite);
-        Mat furniture_with_black_back = new Mat();
-        opencv_core.bitwise_and(f_img,f_img,furniture_with_black_back,notBlackWhite);
-
-        File f_mask = new File(WorkingDirectory,"furniture_mask.png");
-        fur_mask = f_mask.toString();
-/*
-        Uri furniture_mask = Uri.parse("drawable://" + R.drawable.furniture_mask);
-        String im1_name = "furniture_mask.png";
-        File AbsPath1= getAbsoluteFile(im1_name,AddFurniture.this);
-        String f_mask_path = AbsPath1.toString();
-        Log.i("ABSOLUTE", f_mask_path);
-*/
-        File f_black_background = new File(WorkingDirectory,"furniture_with_black_background.png");
-        fur_black_background= f_black_background.toString();
-/*
-        Uri furniture_with_background = Uri.parse("drawable://" + R.drawable.furniture_with_black_background);
-        String im2_name = "furniture_with_black_background.png";
-        File AbsPath2= getAbsoluteFile(im2_name,AddFurniture.this);
-        String f_with_black_background_path = AbsPath1.toString();
-        Log.i("ABSOLUTE", f_mask_path);
-*/
-        imwrite(fur_mask, blackWhite);
-        imwrite(fur_black_background,furniture_with_black_back);
     }
 
+    private void saveImage(Bitmap finalBitmap) {
+
+        String root = Environment.getExternalStorageDirectory().toString();
+        File myDir = new File(root + "/DecorateYourHome");
+        if(!myDir.exists()){
+            myDir.mkdirs();
+        }
+        String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
+        String fname = "furnitureImage_"+ timeStamp +".jpg";
+
+        File file = new File(myDir, fname);
+        if (file.exists()) file.delete ();
+        try {
+            FileOutputStream out = new FileOutputStream(file);
+            finalBitmap.compress(Bitmap.CompressFormat.JPEG, 100, out);
+            out.flush();
+            out.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        Toast.makeText(AddFurniture.this,"Image saved in : "+file.getAbsolutePath(),Toast.LENGTH_LONG).show();
+    }
+
+    /* Checks if external storage is available for read and write */
+    public boolean isExternalStorageWritable() {
+        String state = Environment.getExternalStorageState();
+        if (Environment.MEDIA_MOUNTED.equals(state)) {
+            return true;
+        }
+        return false;
+    }
 
 
 

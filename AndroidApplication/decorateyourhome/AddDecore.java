@@ -1,21 +1,14 @@
 package com.example.decorateyourhome;
 
-
-
-import android.annotation.SuppressLint;
 import android.content.ClipData;
-import android.content.ContentResolver;
 import android.content.ContentUris;
 import android.content.Context;
 import android.database.Cursor;
-import android.graphics.Color;
 import android.graphics.Rect;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.provider.DocumentsContract;
-import android.text.Layout;
-import android.view.MotionEvent;
 import android.view.ViewTreeObserver;
 import android.widget.ImageView;
 import androidx.annotation.Nullable;
@@ -28,48 +21,27 @@ import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
-import android.os.Bundle;
 import android.provider.MediaStore;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
-import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.Toast;
 
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
-import java.io.IOException;
 import java.io.InputStream;
-import java.net.URI;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
-import java.util.Random;
-
-import androidx.appcompat.app.AppCompatActivity;
-
-import org.bytedeco.librealsense.context;
-import org.bytedeco.opencv.global.opencv_core;
 import org.bytedeco.opencv.global.opencv_imgproc;
-import org.bytedeco.opencv.opencv_core.Scalar;
+
 import org.bytedeco.opencv.opencv_core.Size;
-import org.bytedeco.opencv.opencv_core.UMat;
-import org.bytedeco.opencv.opencv_cudaimgproc.CannyEdgeDetector;
-import org.opencv.android.Utils;
-import org.opencv.core.Core;
-import org.opencv.core.CvType;
-//import org.opencv.core.Mat;
-
-
-import org.bytedeco.javacv.OpenCVFrameConverter;
 import org.bytedeco.opencv.opencv_core.Mat;
 import org.bytedeco.opencv.opencv_core.MatVector;
 import org.bytedeco.opencv.opencv_stitching.Stitcher;
-import org.opencv.core.Range;
-import org.opencv.imgproc.Imgproc;
-import org.opencv.ml.TrainData;
-
 import static org.bytedeco.opencv.global.opencv_imgcodecs.imread;
 import static org.bytedeco.opencv.global.opencv_imgcodecs.imwrite;
 import static org.bytedeco.opencv.opencv_stitching.Stitcher.PANORAMA;
@@ -85,7 +57,7 @@ public class AddDecore extends AppCompatActivity {
     File WorkingDirectory;
     File roomPath;
     String SroomPath;
-
+    boolean decoratioDone=false;
 
     File roi;
     int top_left_x,top_left_y,bottom_right_x,bottom_right_y;
@@ -101,7 +73,7 @@ public class AddDecore extends AppCompatActivity {
         WorkingDirectory = new File(sd, "/DecorateYourHome/");
         if (!WorkingDirectory.exists()) {
             if (!WorkingDirectory.mkdir()) {
-                Log.e("ERROR", "Cannot create a directory!");
+     //           Log.e("ERROR", "Cannot create a directory!");
             } else {
                 WorkingDirectory.mkdirs();
             }
@@ -139,6 +111,26 @@ public class AddDecore extends AppCompatActivity {
                 }
             }
         });
+
+        Button saveImg=findViewById(R.id.button3);
+        saveImg.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if(decoratioDone){
+                    Bitmap myBitmap = BitmapFactory.decodeFile(roi.getAbsolutePath());
+                    saveTempBitmap(myBitmap);
+                    decoratioDone=false;
+                }
+                else{
+                    Toast.makeText(getApplicationContext(), "please select Image and add color",
+                            Toast.LENGTH_LONG).show();
+
+                }
+
+            }
+        });
+
+
         view = (DragRectView) findViewById(R.id.dragRect);
         myImage = (ImageView) findViewById(R.id.imageView);
         final RelativeLayout relativeLayout = (RelativeLayout)findViewById(R.id.layout);
@@ -162,10 +154,10 @@ public class AddDecore extends AppCompatActivity {
                     bottom_right_x=rect.right;
                     bottom_right_y=rect.bottom;
 
-                    rect_height = (int)(((double)rect.height()/(double)layout_hight)*img_height);
+                    rect_height = (int)((((double)rect.height()/(double)layout_hight)*img_height)+5);
                     rect_width =(int)(((double) rect.width()/(double)layout_width)*img_width);
 
-                    Log.i("LAYOUT WIDTH","width : "+layout_width +" height : "+ layout_hight);
+         //           Log.i("LAYOUT WIDTH","width : "+layout_width +" height : "+ layout_hight);
 
                     rectCrop= new org.bytedeco.opencv.opencv_core.Rect(top_left_x,top_left_y,rect_width,rect_height);
 
@@ -174,7 +166,7 @@ public class AddDecore extends AppCompatActivity {
 
                 }
             });
-            Log.i("RECTANGLE", "Rect is ( : left " + top_left_x + ", top: " + top_left_y + ", right : " + bottom_right_x+ ",bottom: " + bottom_right_y + ")");
+      //      Log.i("RECTANGLE", "Rect is ( : left " + top_left_x + ", top: " + top_left_y + ", right : " + bottom_right_x+ ",bottom: " + bottom_right_y + ")");
         }
 
     }
@@ -236,7 +228,7 @@ public class AddDecore extends AppCompatActivity {
                 //multiple images selecetd
                 for (int i = 0; i < clipData.getItemCount(); i++) {
                     Uri imageUri = clipData.getItemAt(i).getUri();
-                    Log.d("URI", imageUri.toString());
+             //       Log.d("URI", imageUri.toString());
                     try {
                         InputStream inputStream = getContentResolver().openInputStream(imageUri);
                         Bitmap bitmap = BitmapFactory.decodeStream(inputStream);
@@ -245,14 +237,12 @@ public class AddDecore extends AppCompatActivity {
                         e.printStackTrace();
                     }
 
-                    Log.d("RESULT", "path os passed");
+         //           Log.d("RESULT", "path os passed");
                     String spath = imageUri.toString() ;// "file:///mnt/sdcard/FileName.mp3"
                     String path = getPath(getApplicationContext(), imageUri);
-                    //Log.i("First Path", path);
-                    //Log.i("SECOND", spath);
-                    //img = imread(imageUri.getPath());
+
                     img = imread(path);
-                    Log.d("READ", "message is read");
+         //           Log.d("READ", "message is read");
                     imgs.push_back(img);
                 }
 
@@ -264,23 +254,23 @@ public class AddDecore extends AppCompatActivity {
                 int status = stitcher.stitch(imgs, pano);
                 if (status != Stitcher.OK) {
                     //System.out.println("Can't stitch images, error code = " + status);
-                    Log.i("TAG", "Can't stitch images, error code = " + status);
+         //           Log.i("TAG", "Can't stitch images, error code = " + status);
                 } else {
                     // then stitching is ok
 
-                    Log.i("TAG", "OK");
+         //           Log.i("TAG", "OK");
                     imwrite(SroomPath, pano);
                     //File imgFile = new File(result_name);
                     //Log.i("imgfile", "img file is done");
                     if (roomPath.exists()) {
-                        Log.i("Exist", "img exists");
+         //               Log.i("Exist", "img exists");
                         Bitmap myBitmap = BitmapFactory.decodeFile(roomPath.getAbsolutePath());
                         myImage.setImageBitmap(myBitmap);
                         STITCHING_OK=true;
                         img_width=myBitmap.getWidth();
                         img_height=myBitmap.getHeight();
 
-                        Log.i("IMAGE WIDTH","width : "+img_width +" height : "+ img_height);
+         //               Log.i("IMAGE WIDTH","width : "+img_width +" height : "+ img_height);
                         Toast.makeText(this, "select your area", Toast.LENGTH_LONG).show();
                         //final DragRectView view = (DragRectView) findViewById(R.id.dragRect);
                     }
@@ -295,7 +285,7 @@ public class AddDecore extends AppCompatActivity {
                 //single image selected
                 // ImageView myImage = (ImageView) findViewById(R.id.imageView);
                 Uri imageUri = data.getData();
-                Log.d("URI", imageUri.toString());
+      //          Log.d("URI", imageUri.toString());
                 try {
 
                     InputStream inputStream = getContentResolver().openInputStream(imageUri);
@@ -306,14 +296,13 @@ public class AddDecore extends AppCompatActivity {
                     SroomPath = getPath(getApplicationContext(), imageUri);
                     String spath = imageUri.toString() ;// "file:///mnt/sdcard/FileName.mp3"
                     // String path = getPath(getApplicationContext(), imageUri);
-                    Log.i("First Path", SroomPath);
-                    Log.i("SECOND", spath);
+        //            Log.i("First Path", SroomPath);
+        //            Log.i("SECOND", spath);
                     img_width=bitmap.getWidth();
                     img_height=bitmap.getHeight();
                     // roomPath=new File(imageUri.get());
                     //roomPath=path.parse
-
-                    Log.i("Furn Path", "Not furn area");
+         //           Log.i("Furn Path", "Not furn area");
                 } catch (FileNotFoundException e) {
                     e.printStackTrace();
                 }
@@ -322,7 +311,7 @@ public class AddDecore extends AppCompatActivity {
         }
         // to add furniture image
         else if ( resultCode == RESULT_OK) {
-            Log.i("FURNITURE", "Furniture Area is entered ");
+     //       Log.i("FURNITURE", "Furniture Area is entered ");
             final ImageView imageView = findViewById(R.id.image_view);
             imageUri = data.getData();
             final InputStream imageStream;
@@ -334,14 +323,14 @@ public class AddDecore extends AppCompatActivity {
 */
             //String spath = imageUri.toString();// "file:///mnt/sdcard/FileName.mp3"
             String path = getPath(getApplicationContext(), imageUri);
-            Log.i("Furn Path", path);
+     //       Log.i("Furn Path", path);
             //Log.i("Furn SECOND", spath);
             //furniture_Analysis(path);
 
             AddFurniture(SroomPath, path);
 
             if (roi.exists()) {
-                Log.i("Exist", "img exists");
+      //          Log.i("Exist", "img exists");
                 Bitmap myBitmap = BitmapFactory.decodeFile(roi.getAbsolutePath());
                 //Bitmap myBitmap = BitmapFactory.decodeFile(f_black_background.getAbsolutePath());
                 imageView.setImageBitmap(myBitmap);
@@ -376,10 +365,50 @@ public class AddDecore extends AppCompatActivity {
         roi = new File(WorkingDirectory,"roi.jpg");
         String roi_p= roi.toString();
         imwrite(roi_p,roomImg_cpy);
+        decoratioDone=true;
 
     }
 
+    public void saveTempBitmap(Bitmap bitmap) {
+        if (isExternalStorageWritable()) {
+            saveImage(bitmap);
+        }else{
+            Toast.makeText(AddDecore.this,"Memory is not writable",Toast.LENGTH_LONG).show();
+            //prompt the user or do something
+        }
+    }
 
+    private void saveImage(Bitmap finalBitmap) {
+
+        String root = Environment.getExternalStorageDirectory().toString();
+        File myDir = new File(root + "/DecorateYourHome");
+        if(!myDir.exists()){
+            myDir.mkdirs();
+        }
+        String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
+        String fname = "Decorated_Image_"+ timeStamp +".jpg";
+
+        File file = new File(myDir, fname);
+        if (file.exists()) file.delete ();
+        try {
+            FileOutputStream out = new FileOutputStream(file);
+            finalBitmap.compress(Bitmap.CompressFormat.JPEG, 100, out);
+            out.flush();
+            out.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        Toast.makeText(AddDecore.this,"Image saved in : "+file.getAbsolutePath(),Toast.LENGTH_LONG).show();
+    }
+
+    /* Checks if external storage is available for read and write */
+    public boolean isExternalStorageWritable() {
+        String state = Environment.getExternalStorageState();
+        if (Environment.MEDIA_MOUNTED.equals(state)) {
+            return true;
+        }
+        return false;
+    }
 
     public File getAbsoluteFile(String relativePath, Context context) {
         if (Environment.MEDIA_MOUNTED.equals(Environment.getExternalStorageState())) {

@@ -2,12 +2,10 @@ package com.example.decorateyourhome;
 
 import android.annotation.SuppressLint;
 import android.content.ClipData;
-import android.content.ContentResolver;
 import android.content.ContentUris;
 import android.content.Context;
 import android.database.Cursor;
 import android.graphics.Canvas;
-import android.graphics.Color;
 import android.graphics.ColorFilter;
 import android.graphics.LightingColorFilter;
 import android.graphics.Paint;
@@ -16,8 +14,6 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.provider.DocumentsContract;
-import android.text.Layout;
-import android.view.MotionEvent;
 import android.view.ViewTreeObserver;
 import android.widget.ImageView;
 import androidx.annotation.Nullable;
@@ -30,63 +26,31 @@ import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
-import android.os.Bundle;
 import android.provider.MediaStore;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
-import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.Toast;
 
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.URI;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.Date;
 import java.util.List;
 import java.util.Random;
 
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.content.ContextCompat;
-
-import org.bytedeco.flycapture.FlyCapture2.Utilities;
-import org.bytedeco.libfreenect2.Frame;
-import org.bytedeco.librealsense.context;
-import org.bytedeco.opencv.global.opencv_core;
-import org.bytedeco.opencv.global.opencv_imgproc;
-import org.bytedeco.opencv.opencv_core.Scalar;
-import org.bytedeco.opencv.opencv_core.Size;
-import org.bytedeco.opencv.opencv_core.UMat;
-import org.bytedeco.opencv.opencv_cudaimgproc.CannyEdgeDetector;
-import org.opencv.android.Utils;
-import org.opencv.core.Core;
-import org.opencv.core.CvType;
-//import org.opencv.core.Mat;
-
-
-import org.bytedeco.javacv.OpenCVFrameConverter;
 import org.bytedeco.opencv.opencv_core.Mat;
 import org.bytedeco.opencv.opencv_core.MatVector;
 import org.bytedeco.opencv.opencv_stitching.Stitcher;
-import org.opencv.core.Range;
-import org.opencv.imgcodecs.Imgcodecs;
-import org.opencv.imgproc.Imgproc;
-import org.opencv.ml.TrainData;
-import org.opencv.utils.Converters;
 
 import yuku.ambilwarna.AmbilWarnaDialog;
-
 import static org.bytedeco.opencv.global.opencv_imgcodecs.imread;
 import static org.bytedeco.opencv.global.opencv_imgcodecs.imwrite;
-import static org.bytedeco.opencv.opencv_core.AbstractCvScalar.BLUE;
-import static org.bytedeco.opencv.opencv_core.AbstractCvScalar.GREEN;
-import static org.bytedeco.opencv.opencv_core.AbstractCvScalar.RED;
-import static org.bytedeco.opencv.opencv_core.TermCriteria.EPS;
 import static org.bytedeco.opencv.opencv_stitching.Stitcher.PANORAMA;
 
 public class AddColor extends AppCompatActivity {
@@ -95,19 +59,16 @@ public class AddColor extends AppCompatActivity {
     private static final int PICK_IMAGE=100;
     final int REQUEST_EXTERNAL_STORAGE = 200;
     DragRectView view;
-    Uri imageUri;
     boolean STITCHING_OK=false;
     File WorkingDirectory;
     File roomPath;
     String SroomPath;
-    String fur_black_background;
-    String fur_mask;
+    boolean coloringDone=false;
 
-    File roi,output_final;
+    File roi;
     int top_left_x,top_left_y,bottom_right_x,bottom_right_y;
     int rect_height,rect_width,img_height,img_width,layout_hight,layout_width;
     int DefaultColor;
-    boolean colorChoosen=false;
     org.bytedeco.opencv.opencv_core.Rect rectCrop ;
 
     @SuppressLint("UnsafeDynamicallyLoadedCode")
@@ -115,7 +76,6 @@ public class AddColor extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.color_add);
-        //System.load("C:\\OpenCV\\opencv\\build\\java\\x64\\opencv_java349.dll");
 
         /*We are making a directory to save the result images in the cache*/
         File sd = getCacheDir();
@@ -127,8 +87,12 @@ public class AddColor extends AppCompatActivity {
                 WorkingDirectory.mkdirs();
             }
         }
-        //mDefaultColor = ContextCompat.getColor(AddColor.this, R.color.colorPrimary);
-
+    /*
+        String root = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM).toString();
+        SavedImagesFolder = new File(root,"/DecorateYourHome/");
+        SavedImagesFolder.mkdirs();
+        Log.i("Images Directory : ",SavedImagesFolder.getAbsolutePath());
+*/
         button1 = (Button)findViewById(R.id.button1);
         button1.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -151,10 +115,11 @@ public class AddColor extends AppCompatActivity {
                 if(rect_height>0&&rect_width>0){
                     ColorTheRoom(SroomPath);
                     if (roi.exists()) {
-                        Log.i("Exist", "img exists");
+                //        Log.i("Exist", "img exists");
+
                         Bitmap myBitmap = BitmapFactory.decodeFile(roi.getAbsolutePath());
                         imageView.setImageBitmap(myBitmap);
-
+                        coloringDone=true;
                     }
                 }
                 else {
@@ -163,6 +128,24 @@ public class AddColor extends AppCompatActivity {
                 }
             }
         });
+        Button saveImg=findViewById(R.id.button3);
+        saveImg.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if(coloringDone){
+                    Bitmap myBitmap = BitmapFactory.decodeFile(roi.getAbsolutePath());
+                    saveTempBitmap(myBitmap);
+                    coloringDone=false;
+                }
+                else{
+                    Toast.makeText(getApplicationContext(), "please select Image and add color",
+                            Toast.LENGTH_LONG).show();
+
+                }
+
+            }
+        });
+
         Button button = findViewById(R.id.button);
         button.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -204,7 +187,7 @@ public class AddColor extends AppCompatActivity {
                     bottom_right_y=rect.bottom;
                     //int h = Math.abs(img_height-)
 
-                    rect_height = (int)(((double)rect.height()/(double)layout_hight)*img_height);
+                    rect_height = (int)((((double)rect.height()/(double)layout_hight)*img_height)+8);
                     rect_width =(int)(((double) rect.width()/(double)layout_width)*img_width);
 
                     //rect_height=(int)Math.abs(bottom_right_x-top_left_x);
@@ -212,16 +195,15 @@ public class AddColor extends AppCompatActivity {
                     //rect_width = (int) Math.abs(rect.width()-Math.abs(rect.width()-img_width));
                     //rect_width =(int)(((double) rect.width()/(double)1070)*img_width);
 
-                    Log.i("LAYOUT WIDTH","width : "+layout_width +" height : "+ layout_hight);
+          //          Log.i("LAYOUT WIDTH","width : "+layout_width +" height : "+ layout_hight);
 
                     rectCrop= new org.bytedeco.opencv.opencv_core.Rect(top_left_x,top_left_y,rect_width,rect_height);
 
-                    Toast.makeText(getApplicationContext(), "Rect is (" + rect.left + ", " + rect.top + ", " + rect.right + ", " + rect.bottom + "height :" +rect.height()+"width : "+rect.width()+ ")",
-                            Toast.LENGTH_LONG).show();
+          //          Toast.makeText(getApplicationContext(), "Rect is (" + rect.left + ", " + rect.top + ", " + rect.right + ", " + rect.bottom + "height :" +rect.height()+"width : "+rect.width()+ ")", Toast.LENGTH_LONG).show();
 
                 }
             });
-            Log.i("RECTANGLE", "Rect is ( : left " + top_left_x + ", top: " + top_left_y + ", right : " + bottom_right_x+ ",bottom: " + bottom_right_y + ")");
+        //    Log.i("RECTANGLE", "Rect is ( : left " + top_left_x + ", top: " + top_left_y + ", right : " + bottom_right_x+ ",bottom: " + bottom_right_y + ")");
         }
     }
     public void openColorPicker() {
@@ -232,7 +214,6 @@ public class AddColor extends AppCompatActivity {
             @Override
             public void onOk(AmbilWarnaDialog dialog, int color) {
                 DefaultColor = color;
-                colorChoosen=true;
                 //relativeLayout.setBackgroundColor(mDefaultColor);
             }
         });
@@ -291,7 +272,7 @@ public class AddColor extends AppCompatActivity {
                 //multiple images selecetd
                 for (int i = 0; i < clipData.getItemCount(); i++) {
                     Uri imageUri = clipData.getItemAt(i).getUri();
-                    Log.d("URI", imageUri.toString());
+        //            Log.d("URI", imageUri.toString());
                     try {
                         InputStream inputStream = getContentResolver().openInputStream(imageUri);
                         Bitmap bitmap = BitmapFactory.decodeStream(inputStream);
@@ -300,11 +281,11 @@ public class AddColor extends AppCompatActivity {
                         e.printStackTrace();
                     }
 
-                    Log.d("RESULT", "path os passed");
+         //           Log.d("RESULT", "path os passed");
                     String spath = imageUri.toString() ;// "file:///mnt/sdcard/FileName.mp3"
                     String path = getPath(getApplicationContext(), imageUri);
                     img = imread(path);
-                    Log.d("READ", "message is read");
+         //           Log.d("READ", "message is read");
                     imgs.push_back(img);
                 }
 
@@ -315,23 +296,23 @@ public class AddColor extends AppCompatActivity {
                 int status = stitcher.stitch(imgs, pano);
                 if (status != Stitcher.OK) {
                     //System.out.println("Can't stitch images, error code = " + status);
-                    Log.i("TAG", "Can't stitch images, error code = " + status);
+         //           Log.i("TAG", "Can't stitch images, error code = " + status);
                 } else {
                     // then stitching is ok
 
-                    Log.i("TAG", "OK");
+          //          Log.i("TAG", "OK");
                     imwrite(SroomPath, pano);
                     //File imgFile = new File(result_name);
                     //Log.i("imgfile", "img file is done");
                     if (roomPath.exists()) {
-                        Log.i("Exist", "img exists");
+         //               Log.i("Exist", "img exists");
                         Bitmap myBitmap = BitmapFactory.decodeFile(roomPath.getAbsolutePath());
                         myImage.setImageBitmap(myBitmap);
                         STITCHING_OK=true;
                         img_width=myBitmap.getWidth();
                         img_height=myBitmap.getHeight();
 
-                        Log.i("IMAGE WIDTH","width : "+img_width +" height : "+ img_height);
+         //               Log.i("IMAGE WIDTH","width : "+img_width +" height : "+ img_height);
                         Toast.makeText(this, "select your area", Toast.LENGTH_LONG).show();
                         //final DragRectView view = (DragRectView) findViewById(R.id.dragRect);
                     }
@@ -357,14 +338,14 @@ public class AddColor extends AppCompatActivity {
                     SroomPath = getPath(getApplicationContext(), imageUri);
                     String spath = imageUri.toString() ;// "file:///mnt/sdcard/FileName.mp3"
                     // String path = getPath(getApplicationContext(), imageUri);
-                    Log.i("First Path", SroomPath);
-                    Log.i("SECOND", spath);
+         //           Log.i("First Path", SroomPath);
+         //           Log.i("SECOND", spath);
                     img_width=bitmap.getWidth();
                     img_height=bitmap.getHeight();
                     // roomPath=new File(imageUri.get());
                     //roomPath=path.parse
 
-                    Log.i("Furn Path", "Not furn area");
+          //          Log.i("Furn Path", "Not furn area");
                 } catch (FileNotFoundException e) {
                     e.printStackTrace();
                 }
@@ -374,17 +355,7 @@ public class AddColor extends AppCompatActivity {
 
     }
 
-    public void cropRoom(String room_path){
 
-        Mat roomImg= new Mat();
-        roomImg=imread(room_path);
-        Mat roomImg_cpy=roomImg.clone();
-        Mat cropped=new Mat(roomImg_cpy,rectCrop);
-
-        roi = new File(WorkingDirectory,"roi.jpg");
-        String roi_p= roi.toString();
-        imwrite(roi_p,cropped);
-    }
 
     public static Bitmap changeBitmapColor(Bitmap sourceBitmap, int color)
     {
@@ -396,12 +367,7 @@ public class AddColor extends AppCompatActivity {
         canvas.drawBitmap(resultBitmap, 0, 0, paint);
         return resultBitmap;
     }
-    public Uri getImageUri(Context inContext, Bitmap inImage) {
-        ByteArrayOutputStream bytes = new ByteArrayOutputStream();
-        inImage.compress(Bitmap.CompressFormat.JPEG, 100, bytes);
-        String path = MediaStore.Images.Media.insertImage(inContext.getContentResolver(), inImage, "Title", null);
-        return Uri.parse(path);
-    }
+
     public void ColorTheRoom(String room_path){
 
         Mat roomImg= new Mat();
@@ -414,7 +380,6 @@ public class AddColor extends AppCompatActivity {
         imwrite(roi_p,cropped);
 
         Bitmap myBitmap = BitmapFactory.decodeFile(roi.getAbsolutePath());
-        Bitmap bm ;
         myBitmap = changeBitmapColor(myBitmap,DefaultColor);
 
         try (FileOutputStream out = new FileOutputStream(roi)) {
@@ -426,244 +391,234 @@ public class AddColor extends AppCompatActivity {
         Mat coloredPortion= imread(roi_p);
         coloredPortion.copyTo(roomImg_cpy.apply(rectCrop));
         imwrite(roi_p,roomImg_cpy);
-        /*String FILENAME = "image.png";
-        String PATH = "/mnt/sdcard/"+ FILENAME;*/
-/*
-        Uri coloredUri=getImageUri(AddColor.this,myBitmap);
-        String coloredPath=getPath(getApplicationContext(), coloredUri);
-        Mat coloredPortion= imread(coloredPath);
-
-        roi = new File(WorkingDirectory,"roi.png");
-        String roi_p= roi.toString();
-        imwrite(roi_p,coloredPortion);*/
-
-        /*
-        File coloredPortion_file=new File(WorkingDirectory,"colored.png");
-        Uri yourUri = Uri.fromFile(coloredPortion_file);
-        String coloredPath=getPath(getApplicationContext(), yourUri);
-
-        Mat coloredPortion= imread(coloredPath);
-
-        roi = new File(WorkingDirectory,"roi.png");
-        String roi_p= roi.toString();
-        imwrite(roi_p,coloredPortion);
-        */
-
-/*
-        Frame frame = OpenCVFrameConverter.ToMat(myBitmap);
-        Mat rgbaMat = OpenCVFrameConverter.ToMat();*/
-
-       /* Bitmap bmp32 = myBitmap.copy(Bitmap.Config.ARGB_8888, true);
-        Utils.bitmapToMat(bmp32, coloredPortion);*/
-        //Utilities.bitmapToMat(bmp32, coloredPortion);
-        //Converters.to_mat
-        /*
-        coloredPortion.copyTo(roomImg_cpy.apply(rectCrop));
-        imwrite(roi_p,roomImg_cpy);*/
-        //Size rectSize= new Size(cropped.arrayWidth(),cropped.arrayHeight());
-        //Scalar red = new Scalar(Scalar.RED);
-        /*
-        Mat colored_portion = new Mat(rectSize,CvType.CV_8SC3,red);
-        Log.i("COLORED PORTION","Channels number: "+colored_portion.channels());
-        colored_portion.copyTo(roomImg_cpy.apply(rectCrop));
-        */
-        /*
-        Mat colored_portion=cropped.clone();
-        opencv_imgproc.cvtColor(colored_portion, colored_portion, Imgproc.COLOR_BGR2BGRA);
-        Scalar habd = new Scalar(RED);
-        Scalar green =new Scalar(GREEN) ;
-        //Scalar color =new Scalar(Col);
-        colored_portion.put(habd);
-        colored_portion.put(green);*/
-
 
     }
-
-    public void ColorRoom(String room_path){
-        //System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
-        org.opencv.core.Mat roomImg =new org.opencv.core.Mat();
-        roomImg = Imgcodecs.imread(room_path);
-        /*
-        org.opencv.core.Mat roomImg_cpy=roomImg.clone();
-        org.opencv.core.Rect rectangle = new org.opencv.core.Rect(top_left_x,top_left_y,rect_width,rect_height);
-        org.opencv.core.Mat cropped= new org.opencv.core.Mat(roomImg_cpy, rectangle);
-
-        roi = new File(WorkingDirectory,"roi.png");
-        String roi_p= roi.toString();
-        Imgcodecs.imwrite(roi_p,cropped);*/
-    }
-
-    public void testMerge() {
-        Mat src1 = new Mat(2, 2, CvType.CV_32FC1, new Scalar(1));
-        Mat src2 = new Mat(2, 2, CvType.CV_32FC1, new Scalar(2));
-        Mat src3 = new Mat(2, 2, CvType.CV_32FC1, new Scalar(3));
-        Mat dst  = new Mat();
-        List<Mat> listMat = Arrays.asList(src1, src2, src3);
-
-        opencv_core.merge((MatVector) listMat, dst);
-
-        Scalar red = new Scalar(Scalar.RED);
-        Mat truth = new Mat(2, 2, CvType.CV_32FC3, red);
-        //assertMatEqual(truth, dst, EPS);
-
-    }
-    public void AddFurniture(String room_path,String imPath){
-        //reading the original furniture image given from the user
-        Mat f_img = new Mat();
-        f_img = imread(imPath);
-        Mat f_img_cpy=f_img.clone();
-        Mat gray= new Mat();
-        opencv_imgproc.cvtColor(f_img_cpy,gray,Imgproc.COLOR_BGR2GRAY);
-        Mat blackAndWhite=new Mat();
-        opencv_imgproc.threshold(gray,blackAndWhite,200,255,opencv_imgproc.THRESH_BINARY);
-
-        Mat canny=new Mat();
-        opencv_imgproc.Canny(blackAndWhite, canny, 20, 170);
-        Mat hierarchy=new Mat();
-        MatVector contours=new MatVector();
-        opencv_imgproc.findContours(canny,contours,hierarchy,opencv_imgproc.RETR_EXTERNAL,opencv_imgproc.CHAIN_APPROX_NONE);
-        Random r = new Random();
-        for (int i=0;i< contours.size();i++){
-            Scalar black = Scalar.BLACK ;//there may be a problem he
-            opencv_imgproc.drawContours(f_img_cpy,contours,opencv_imgproc.FILLED,black);
-
+    public void saveTempBitmap(Bitmap bitmap) {
+        if (isExternalStorageWritable()) {
+            saveImage(bitmap);
+        }else{
+            Toast.makeText(AddColor.this,"Memory is not writable",Toast.LENGTH_LONG).show();
+            //prompt the user or do something
         }
-        Log.i("BEFORE CONVERSION", "The Following area is dangerous");
-        Mat gray_img=new Mat();
-        opencv_imgproc.cvtColor(f_img_cpy,gray_img,opencv_imgproc.COLOR_BGR2GRAY);
+    }
 
-        Mat furniture_mask=new Mat();
-        opencv_imgproc.threshold(gray_img,furniture_mask,200,255,opencv_imgproc.THRESH_BINARY);
-        Log.i("BEFORE CONVERSION", "The Following area is dangerous");
-        Mat notBlackWhite=new Mat();
+    private void saveImage(Bitmap finalBitmap) {
 
-        opencv_core.bitwise_not(furniture_mask,notBlackWhite);
-        Mat furniture_with_black_back = new Mat();
-        opencv_core.bitwise_and(f_img,f_img,furniture_with_black_back,notBlackWhite);
+        String root = Environment.getExternalStorageDirectory().toString();
+        File myDir = new File(root + "/DecorateYourHome");
+        if(!myDir.exists()){
+            myDir.mkdirs();
+        }
+        String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
+        String fname = "ColoredImage_"+ timeStamp +".jpg";
 
-        File f_mask = new File(WorkingDirectory,"furniture_mask.png");
-        fur_mask = f_mask.toString();
-        File f_black_background = new File(WorkingDirectory,"furniture_with_black_background.png");
-        fur_black_background= f_black_background.toString();
-        imwrite(fur_mask, furniture_mask);
-        imwrite(fur_black_background,furniture_with_black_back);
+        File file = new File(myDir, fname);
+        if (file.exists()) file.delete ();
+        try {
+            FileOutputStream out = new FileOutputStream(file);
+            finalBitmap.compress(Bitmap.CompressFormat.JPEG, 100, out);
+            out.flush();
+            out.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        Toast.makeText(AddColor.this,"Image saved in : "+file.getAbsolutePath(),Toast.LENGTH_LONG).show();
+    }
 
+    /* Checks if external storage is available for read and write */
+    public boolean isExternalStorageWritable() {
+        String state = Environment.getExternalStorageState();
+        if (Environment.MEDIA_MOUNTED.equals(state)) {
+            return true;
+        }
+        return false;
+    }
+
+    /*
+    public void saveToGallery(String room_path){
+        final int min = 1;
+        final int max = 1000000;
+        final int image_name = new Random().nextInt((max - min) + 1) + min;
+        SavedImages = new File(SavedImagesFolder,"roomPic"+image_name+".jpg");
+
+        String savedImgPath = SavedImages.toString();
+        Log.i("COLORED IMAGE PATH",savedImgPath);
         Mat roomImg= new Mat();
         roomImg=imread(room_path);
-        Mat roomImg_cpy=roomImg.clone();
-        //roomImg_cpy = roomImg.adjustROI(top_left_y,bottom_right_y,top_left_x,bottom_right_x);
-       /* Log.i( "MATRIX WIDTH" , "width is  : "+roomImg_cpy.arrayWidth()+"height is"+roomImg_cpy.arrayHeight() )    ;
-        Log.i("DOWN RECTANGLE", "Rect is ( : left " + top_left_x + ", top: " + top_left_y + ", right : " + bottom_right_x+ ",bottom: " + bottom_right_y + ")");
-        Log.i("CROPPED", "height : "+ rectCrop.height()+"width :" + rectCrop.width());*/
-
-        Mat cropped=new Mat(roomImg_cpy,rectCrop);
-        /*
-        Log.i("HABBBBD", "height : "+ cropped.arrayHeight()+"width :" + cropped.arrayWidth());
-        Log.i("CROPPEDImg", "height : "+ cropped.arrayHeight()+"width :" + cropped.arrayWidth());*/
-        //cropped.adjustROI(top_left_y,bottom_right_y,top_left_x,bottom_right_x);
-        //cropped.apply(rectCrop);
-        //cropped.locateROI(rectCrop.size(),rectCrop.tl());
-        /****************************
-         roi = new File(WorkingDirectory,"roi.jpg");
-         String roi_p= roi.toString();
-         imwrite(roi_p,cropped);
-         *****************************/
-        //Size rectSize = new Size(rect_width,rect_height);
-        //Size rectSize = new Size(cropped.size());
-        Size rectSize= new Size(cropped.arrayWidth(),cropped.arrayHeight());
-        //Log.i("SIZE", "height : "+ rectSize);
-        Log.i("RESIZE", "mat is resized : height "+ rectSize.height()+"mat is resized : width "+ rectSize.width());
-        Mat resized_f_mask =new Mat();
-        opencv_imgproc.resize(furniture_mask,resized_f_mask,rectSize);
-        Log.i("CROPPED SIZE", "mat is resized : height "+ cropped.arrayHeight()+"mat is resized : width "+ cropped.arrayWidth());
+        imwrite(savedImgPath,roomImg);
 
 
-        Log.i("MASK SIZE", "mat is resized : height "+ resized_f_mask.arrayHeight()+"mat is resized : width "+ resized_f_mask.arrayWidth());
+        new File(savedImgPath).getParentFile().mkdir();
 
-        Mat out = new Mat(rectSize);
-       /* if(cropped.size()==resized_f_mask.size()){
-            Log.i("RESIZE222", "mat is resized : height "+ cropped.arrayHeight()+"mat is resized : width "+ cropped.arrayWidth());
-        }*/
-
-
-        opencv_core.bitwise_and(cropped,cropped,out,resized_f_mask);
-        opencv_imgproc.resize(furniture_with_black_back,furniture_with_black_back,rectSize);
-
-
-        Mat out2=new Mat();
-        opencv_core.bitwise_or(furniture_with_black_back,out,out2);
-        //roomImg.put()
-        //Mat output_image=new Mat()
-        out2.copyTo(roomImg_cpy.apply(rectCrop));
-        roi = new File(WorkingDirectory,"roi.jpg");
-        String roi_p= roi.toString();
-        imwrite(roi_p,roomImg_cpy);
-
-        output_final = new File(WorkingDirectory,"output.jpg");
-        String final_out= output_final.toString();
-        imwrite(final_out,roomImg_cpy);
-    }
-
-
-    //this function is to mask the image of furniture
-    public void furniture_Analysis(String imPath){
-
-        //reading the original furniture image given from the user
-        Mat f_img = new Mat();
-        f_img = imread(imPath);
-        Mat f_img_cpy=f_img.clone();
-        Mat gray= new Mat();
-        opencv_imgproc.cvtColor(f_img_cpy,gray,Imgproc.COLOR_BGR2GRAY);
-        Mat blackAndWhite=new Mat();
-        opencv_imgproc.threshold(gray,blackAndWhite,200,255,opencv_imgproc.THRESH_BINARY);
-
-        Mat canny=new Mat();
-        opencv_imgproc.Canny(blackAndWhite, canny, 20, 170);
-        Mat hierarchy=new Mat();
-        MatVector contours=new MatVector();
-        opencv_imgproc.findContours(canny,contours,hierarchy,opencv_imgproc.RETR_EXTERNAL,opencv_imgproc.CHAIN_APPROX_NONE);
-        Random r = new Random();
-        for (int i=0;i< contours.size();i++){
-            Scalar black = Scalar.BLACK ;//there may be a problem he
-            opencv_imgproc.drawContours(f_img_cpy,contours,opencv_imgproc.FILLED,black);
-
+        try {
+            OutputStream fileOutputStream = new FileOutputStream(savedImgPath);
+            savedBitmap.compress(CompressFormat.JPEG, 100, fileOutputStream);
+            fileOutputStream.flush();
+            fileOutputStream.close();
+        } catch (IOException e2) {
+            e2.printStackTrace();
         }
-        Log.i("BEFORE CONVERSION", "The Following area is dangerous");
-        Mat gray_img=new Mat();
-        opencv_imgproc.cvtColor(f_img_cpy,gray_img,opencv_imgproc.COLOR_BGR2GRAY);
+        savedBitmap.recycle();
 
-        Mat blackWhite=new Mat();
-        opencv_imgproc.threshold(gray_img,blackWhite,200,255,opencv_imgproc.THRESH_BINARY);
-        Log.i("BEFORE CONVERSION", "The Following area is dangerous");
-        Mat notBlackWhite=new Mat();
+        File file = new File(resultPath);
+        ContentValues values = new ContentValues();
+        values.put(MediaStore.Images.Media.TITLE, "Photo");
+        values.put(MediaStore.Images.Media.DESCRIPTION, "Edited");
+        values.put(MediaStore.Images.Media.MIME_TYPE, "image/jpeg");
+        values.put(MediaStore.Images.Media.DATE_TAKEN, System.currentTimeMillis ());
+        values.put(MediaStore.Images.Media.DATE_ADDED, System.currentTimeMillis());
+        values.put(MediaStore.Images.ImageColumns.BUCKET_ID, file.toString().toLowerCase(Locale.US).hashCode());
+        values.put(MediaStore.Images.ImageColumns.BUCKET_DISPLAY_NAME, file.getName().toLowerCase(Locale.US));
+        values.put("_data", resultPath);
 
-        opencv_core.bitwise_not(blackWhite,notBlackWhite);
-        Mat furniture_with_black_back = new Mat();
-        opencv_core.bitwise_and(f_img,f_img,furniture_with_black_back,notBlackWhite);
+        ContentResolver cr = getContentResolver();
+        cr.insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values);
 
-        File f_mask = new File(WorkingDirectory,"furniture_mask.png");
-        fur_mask = f_mask.toString();
-/*
-        Uri furniture_mask = Uri.parse("drawable://" + R.drawable.furniture_mask);
-        String im1_name = "furniture_mask.png";
-        File AbsPath1= getAbsoluteFile(im1_name,AddFurniture.this);
-        String f_mask_path = AbsPath1.toString();
-        Log.i("ABSOLUTE", f_mask_path);
-*/
-        File f_black_background = new File(WorkingDirectory,"furniture_with_black_background.png");
-        fur_black_background= f_black_background.toString();
-/*
-        Uri furniture_with_background = Uri.parse("drawable://" + R.drawable.furniture_with_black_background);
-        String im2_name = "furniture_with_black_background.png";
-        File AbsPath2= getAbsoluteFile(im2_name,AddFurniture.this);
-        String f_with_black_background_path = AbsPath1.toString();
-        Log.i("ABSOLUTE", f_mask_path);
-*/
-        imwrite(fur_mask, blackWhite);
-        imwrite(fur_black_background,furniture_with_black_back);
+        MediaScannerConnection.scanFile(AddColor.this, new String[]{SavedImages.getPath()}, new String[]{"image/jpg"}, null);
     }
 
+*/
+    /*
+    public static void addPicToGallery(Context context, String photoPath) {
+        Intent mediaScanIntent = new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE);
+        File f = new File(photoPath);
+        Uri contentUri = Uri.fromFile(f);
+        mediaScanIntent.setData(contentUri);
+        context.sendBroadcast(mediaScanIntent);
+    }
+*/
+    /*
+    private void SaveImage(Bitmap finalBitmap) {
 
+        String root = Environment.getExternalStoragePublicDirectory(
+                Environment.DIRECTORY_PICTURES).toString();
+        File myDir = new File(root + "/saved_images");
+        myDir.mkdirs();
+        Random generator = new Random();
+
+        int n = 10000;
+        n = generator.nextInt(n);
+        String fname = "Image-"+ n +".jpg";
+        File file = new File (myDir, fname);
+        if (file.exists ()) file.delete ();
+        try {
+            FileOutputStream out = new FileOutputStream(file);
+            finalBitmap.compress(Bitmap.CompressFormat.JPEG, 90, out);
+            // sendBroadcast(new Intent(Intent.ACTION_MEDIA_MOUNTED,
+            //     Uri.parse("file://"+ Environment.getExternalStorageDirectory())));
+            out.flush();
+            out.close();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+// Tell the media scanner about the new file so that it is
+// immediately available to the user.
+        MediaScannerConnection.scanFile(this, new String[]{file.toString()}, null,
+                new MediaScannerConnection.OnScanCompletedListener() {
+                    public void onScanCompleted(String path, Uri uri) {
+                        Log.i("ExternalStorage", "Scanned " + path + ":");
+                        Log.i("ExternalStorage", "-> uri=" + uri);
+                    }
+                });
+    }*/
+    /*
+    private void saveImage(Bitmap finalBitmap, String image_name) {
+
+        String root = Environment.getExternalStorageDirectory().toString();
+        File myDir = new File(root,"DecorateYourHome");
+        myDir.mkdirs();
+        String fname = "Image-" + image_name+ ".jpg";
+        File file = new File(myDir, fname);
+        if (file.exists()) file.delete();
+        Log.i("LOAD", root + fname);
+        try {
+            FileOutputStream out = new FileOutputStream(file);
+            finalBitmap.compress(Bitmap.CompressFormat.JPEG, 90, out);
+            out.flush();
+            out.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+*/
+    /*
+    public void storeInGallery(Bitmap bitmap){
+        final int min = 1;
+        final int max = 1000000;
+        final int image_name = new Random().nextInt((max - min) + 1) + min;
+
+        SavedImages = new File(SavedImagesFolder,"roomPic"+image_name+".png");
+
+        String savedImgPath = SavedImages.toString();
+
+        System.out.println(SavedImages.getAbsolutePath());
+        if (SavedImages.exists()) SavedImages.delete();
+        Log.i("LOAD", savedImgPath);
+        try {
+            FileOutputStream out = new FileOutputStream(SavedImages);
+            bitmap.compress(Bitmap.CompressFormat.PNG, 90, out);
+            out.flush();
+            out.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }*/
+        /*
+        bitmap.recycle();
+        //File file = new File(resultPath);
+        ContentValues values = new ContentValues();
+        values.put(MediaStore.Images.Media.TITLE, "Photo_"+image_name);
+        values.put(MediaStore.Images.Media.DESCRIPTION, "Edited");
+        values.put(MediaStore.Images.Media.MIME_TYPE, "image/png");
+        values.put(MediaStore.Images.Media.DATE_TAKEN, System.currentTimeMillis ());
+        values.put(MediaStore.Images.Media.DATE_ADDED, System.currentTimeMillis());
+        values.put(MediaStore.Images.ImageColumns.BUCKET_ID, SavedImages.toString().toLowerCase(Locale.US).hashCode());
+        values.put(MediaStore.Images.ImageColumns.BUCKET_DISPLAY_NAME, SavedImages.getName().toLowerCase(Locale.US));
+        values.put("_data", savedImgPath);
+
+        ContentResolver cr = getContentResolver();
+        cr.insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values);
+*/
+        //MediaScannerConnection.scanFile(AddColor.this, new String[]{SavedImages.getPath()}, new String[]{"image/png"}, null);
+                /*
+                    public static final String insertImage (ContentResolver cr, Bitmap source,
+                    String title, String description)
+
+                        Insert an image and create a thumbnail for it.
+
+                    Parameters
+                        cr : The content resolver to use
+                        source : The stream to use for the image
+                        title : The name of the image
+                        description : The description of the image
+
+                    Returns
+                        The URL to the newly created image, or null if the image
+                        failed to be stored for any reason.
+                */
+            /*generate random number for title*/
+        /*
+        final int min = 1;
+        final int max = 1000000;
+        final int random = new Random().nextInt((max - min) + 1) + min;
+        // Save image to gallery
+        String savedImageURL = MediaStore.Images.Media.insertImage(
+                getContentResolver(),
+                bitmap,
+                "colored_image_"+random,
+                "Image of colored room"
+        );*/
+
+        // Parse the gallery image url to uri
+        //Uri savedImageURI = Uri.parse(savedImageURL);
+
+        // Display the saved image to ImageView
+       // iv_saved.setImageURI(savedImageURI);
+
+        // Display saved image url to TextView
+        //tv_saved.setText("Image saved to gallery.\n" + savedImageURL);
+
+   // }
 
 
     public File getAbsoluteFile(String relativePath, Context context) {
@@ -771,72 +726,7 @@ public class AddColor extends AppCompatActivity {
         return "com.android.providers.media.documents".equals(uri.getAuthority());
     }
 
-    /*This function is a trash but i need it in future*/
-    public void furnitureAnalysis(String imPath){
 
-        //reading the original furniture image given from the user
-        Mat f_img = new Mat();
-        f_img = imread(imPath);
-        Mat f_img_cpy=f_img.clone();
-        Mat gray= new Mat();
-        opencv_imgproc.cvtColor(f_img_cpy,gray,Imgproc.COLOR_BGR2GRAY);
-        Mat blackAndWhite=new Mat();
-        opencv_imgproc.threshold(gray,blackAndWhite,200,255,opencv_imgproc.THRESH_BINARY);
-        Mat canny=new Mat();
-        opencv_imgproc.Canny(blackAndWhite, canny, 20, 170);
-        Mat hierarchy=new Mat();
-        MatVector contours=new MatVector();
-        opencv_imgproc.findContours(canny,contours,hierarchy,opencv_imgproc.RETR_EXTERNAL,opencv_imgproc.CHAIN_APPROX_NONE);
-        Random r = new Random();
-        for (int i=0;i< contours.size();i++){
-            Scalar black = Scalar.BLACK ;//there may be a problem he
-            //Scala black = Scalar.BLACK ;//there may be a problem here
-            //Imgproc.drawContours(f_img_cpy, contours, opencv_imgproc.FILLED,black, -1);
-            //opencv_imgproc.drawContours(f_img_cpy, contours,opencv_imgproc.FILLED,black, 3);
-            //opencv_imgproc.drawContours();
-            opencv_imgproc.drawContours(f_img_cpy,contours,opencv_imgproc.FILLED,black);
-
-        }
-        Log.i("BEFORE CONVERSION", "The Following area is dangerous");
-        Mat gray_img=new Mat();
-        opencv_imgproc.cvtColor(f_img_cpy,gray_img,opencv_imgproc.COLOR_BGR2GRAY);
-
-        Mat blackWhite=new Mat();
-        opencv_imgproc.threshold(gray_img,blackWhite,200,255,opencv_imgproc.THRESH_BINARY);
-        Log.i("BEFORE CONVERSION", "The Following area is dangerous");
-        // Mat notBlackWhite=new Mat();
-       /* OpenCVFrameConverter.ToMat converter1 = new OpenCVFrameConverter.ToMat();
-        OpenCVFrameConverter.ToOrgOpenCvCoreMat converter2 = new OpenCVFrameConverter.ToOrgOpenCvCoreMat();
-
-        org.opencv.core.Mat CVnotBlackWhite=new org.opencv.core.Mat();
-        // org.opencv.core.Mat CVnotBlackWhite = converter2.convert(converter1.convert(notBlackWhite));
-        org.opencv.core.Mat CVblackWhite = converter2.convert(converter1.convert(blackWhite));*/
-/*
-        //Mat mat2 = converter2.convert(converter1.convert());
-        Core.bitwise_not(CVblackWhite,CVnotBlackWhite);
-
-        //notBlackWhite=converter1.convert(converter2.convert(CVnotBlackWhite));
-        org.opencv.core.Mat CVfurniture_with_black_back=new org.opencv.core.Mat();
-        org.opencv.core.Mat CVoriginalImg = converter2.convert(converter1.convert(f_img));
-        Core.bitwise_and(CVoriginalImg,CVoriginalImg,CVfurniture_with_black_back,CVnotBlackWhite);
-
-        Mat furniture_with_black_back=converter1.convert(converter2.convert(CVfurniture_with_black_back));
-
-        Uri furniture_mask = Uri.parse("drawable://" + R.drawable.furniture_mask);
-        String im1_name = "furniture_mask.png";
-        File AbsPath1= getAbsoluteFile(im1_name,AddFurniture.this);
-        String f_mask_path = AbsPath1.toString();
-        Log.i("ABSOLUTE", f_mask_path);
-
-        Uri furniture_with_background = Uri.parse("drawable://" + R.drawable.furniture_with_black_background);
-        String im2_name = "furniture_with_black_background.png";
-        File AbsPath2= getAbsoluteFile(im2_name,AddFurniture.this);
-        String f_with_black_background_path = AbsPath1.toString();
-        Log.i("ABSOLUTE", f_mask_path);
-        imwrite(f_mask_path,furniture_with_black_back);
-        imwrite(f_with_black_background_path,blackWhite);
-*/
-    }
 
 
 }

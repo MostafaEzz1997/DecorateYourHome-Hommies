@@ -3,9 +3,28 @@
     <!-- Base application theme. -->
     <style name="AppTheme" parent="Theme.AppCompat.Light.DarkActionBar">
         <!-- Customize your theme here. -->
-        <item name="colorPrimary">@color/colorPrimary</item>
-        <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
-        <item name="colorAccent">@color/colorAccent</item>
+        <item name="colorPrimary">@color/action</item>
+        <item name="colorPrimaryDark">@color/action</item>
+        <item name="colorAccent">@color/action</item>
     </style>
 
+    <style name="ActionBar" parent="@style/Widget.AppCompat.Light.ActionBar">
+        <item name="android:background">@color/White </item>
+        <item name="background">@color/White </item>
+        <item name="android:titleTextStyle">@style/ActionBar.Text</item>
+        <item name="titleTextStyle">@style/ActionBar.Text</item>
+    </style>
+
+    <style name="ActionBar.Text" parent="@android:style/TextAppearance.Medium">
+        <item name="android:textColor">@color/White</item>
+    </style>
+    <!---
+<style name="TextAppearance.AppCompat.Widget.ActionBar.Title" parent="android:style/TextAppearance">
+    <item name="android:textSize">@dimen/_150sdp</item>
+    <item name="android:title">Decorate Your Home-Hommies</item>
+    <item name="android:textColor">@color/White</item>
+    <item name="color">@color/action</item>
+
+</style>
+-->
 </resources>
