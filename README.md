@@ -4,9 +4,9 @@ Simple app which will allow you to add some painting templates, some furniture o
 ## Table Of Contents
 * [General-Info](#general-info)
 * [Application](#application)
-* [Technologies](#technologies_used)
+* [Technologies](#Technologies)
 * [Features](#features)
-* [Inspiration and future work](#inspiration_and_future work)
+* [Inspiration and future work](#Inspiration and future work)
 
 
 ## General-Info
@@ -44,14 +44,14 @@ For Android application:
 We used Java, opencv(for java) for coding, (Android studio) As IDE for building, debugging and testing.
 
 ## Features
-1- Adding multiple images for your room, or you can select only one.
-2- you can add any color you want to your room and change it if you don't like it.
-3- you can add any furniture design you want to your room and view it.
-4- you can add any decoration like (paintings, landscape) to your room.
-5- saving your images and reuse them to add more and more things to it to get it just as you wanted to.
+1- Adding multiple images for your room, or you can select only one.  
+2- you can add any color you want to your room and change it if you don't like it.  
+3- you can add any furniture design you want to your room and view it.  
+4- you can add any decoration like (paintings, landscape) to your room.  
+5- saving your images and reuse them to add more and more things to it to get it just as you wanted to.  
 
 ## Inspiration and future work
 This app was inspired by one of our team members who has gone through hard times with his apartment, spent a lot of time imagining his room and thinking what it will be like, he spent a lot of money and hard work moving and removing his furniture to see what's better.
 ### future work
-1- we will add some more features to our app, like allowing the user to rotate his furniture to best fit his room.
+1- we will add some more features to our app, like allowing the user to rotate his furniture to best fit his room.  
 2- we will show his room as 360 degree so the user can deel like it's real and give him a better view.
