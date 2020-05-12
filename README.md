@@ -5,8 +5,8 @@ Simple app which will allow you to add some painting templates, some furniture o
 * [General-Info](#general-info)
 * [Application](#application)
 * [Technologies](#Technologies)
-* [Features](#features)
-* [Inspiration and future work](#Inspiration and future work)
+* [Features](#features)  
+* Inspiration and future work
 
 
 ## General-Info
