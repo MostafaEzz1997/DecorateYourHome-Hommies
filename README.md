@@ -20,22 +20,22 @@ Please note: these codes are fully commented, open source for anyone to use, but
 ## Application
 After setup, when you launch our application A page will apear which has three buttons.
 
-![IMG_20200512_165702](https://user-images.githubusercontent.com/31229408/81710548-143e5280-9473-11ea-933f-0a274579f4ec.jpg)
+![img1](https://user-images.githubusercontent.com/31229408/81715870-01c71780-9479-11ea-854b-b80de1e61a47.JPG)
 
 Each one leads for a  different feature in our app. and we will come to those features later.
 If you choose (Add a color to your room) you will have another page in which you can select either multiple images of your room (if you couldn't take a whole picture) or your full room image, then you will select the area you wants to color, then show it.
 
-![IMG_20200512_165727](https://user-images.githubusercontent.com/31229408/81711376-e6a5d900-9473-11ea-9266-1762a808677c.jpg)
-![IMG_20200512_165811](https://user-images.githubusercontent.com/31229408/81711440-fae9d600-9473-11ea-8b30-2eff8d60c8b4.jpg)
-![IMG_20200512_165904](https://user-images.githubusercontent.com/31229408/81711495-076e2e80-9474-11ea-9497-45000ccf9259.jpg)
+![img2](https://user-images.githubusercontent.com/31229408/81716247-7306ca80-9479-11ea-8c94-85fc8dab5561.JPG)
+![img3](https://user-images.githubusercontent.com/31229408/81716240-71d59d80-9479-11ea-93f0-6e6c27b1f85c.JPG)
+![img4](https://user-images.githubusercontent.com/31229408/81716246-7306ca80-9479-11ea-811a-36b57f939149.JPG)
 
 If you want to add a furniture to you room then select (Add furniture to your room) button from the starting page, choose your room image then select the area you want to add your furniture to, then choose your furniture image.
 
-![IMG_20200512_170022](https://user-images.githubusercontent.com/31229408/81711977-72b80080-9474-11ea-98b3-a946d19a301a.jpg)
+![img5](https://user-images.githubusercontent.com/31229408/81716310-887bf480-9479-11ea-8fe3-dff5505d4099.JPG)
 
 If you pressed (Add decoration or curtains) then you want to add special decorations to your room, and just as before, you will select your room, choose an area, choose your decoration Image.
 
-![IMG_20200512_170330](https://user-images.githubusercontent.com/31229408/81712417-d8a48800-9474-11ea-91f2-092b3589886c.jpg)
+![img6](https://user-images.githubusercontent.com/31229408/81716358-9762a700-9479-11ea-886d-379ca3c38782.JPG)
 
 ## Technologies
 For Image Analysis (Desktop version) and GUI: 
