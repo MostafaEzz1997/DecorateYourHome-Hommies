@@ -17,6 +17,7 @@ def click_and_crop(event, x, y, flags, param):
         refPt.append((x, y))
         cropping = False
 
+
 def coloring(image):
 	cv2.namedWindow("image")
 	# create 3 bars for choosing the value of blue, green and red color
@@ -37,6 +38,8 @@ def coloring(image):
 		if key == ord("c"):
 			break
 	
+	# crop selected region selected by the user, then make an image (img) with the same dimension of (roi)
+	# and show it so the user can see colors he chooses
 	roi = clone[refPt[0][1]:refPt[1][1], refPt[0][0]:refPt[1][0]]
 	
 	img = np.zeros((roi.shape[0],roi.shape[1],3),np.uint8)
@@ -51,7 +54,9 @@ def coloring(image):
 		k = cv2.waitKey(1) & 0xFF
 		if k == 27:
 			break
-	
+		
+		# get color values entered by the user and store it, then merge them together to create the specified color
+		# then shows it to the user.
 		b = cv2.getTrackbarPos("B","image")
 		g = cv2.getTrackbarPos("G", "image")
 		r = cv2.getTrackbarPos("R", "image")
