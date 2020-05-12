@@ -6,6 +6,7 @@ Simple app which will allow you to add some painting templates, some furniture o
 * [Application](#application)
 * [Technologies](#Technologies)
 * [Features](#features)  
+* [Setup](#Setup)  
 * Inspiration and future work
 
 
@@ -29,11 +30,11 @@ If you choose (Add a color to your room) you will have another page in which you
 ![img3](https://user-images.githubusercontent.com/31229408/81716240-71d59d80-9479-11ea-93f0-6e6c27b1f85c.JPG)
 ![img2](https://user-images.githubusercontent.com/31229408/81720782-27efb600-947f-11ea-8bcd-f8731a79adae.JPG)
 
-If you want to add a furniture to you room then select (Add furniture to your room) button from the starting page, choose your room image then select the area you want to add your furniture to, then choose your furniture image.
+If you want to add a furniture to you room then select (Add a furniture or draw on the wall) button from the starting page, choose your room image then select the area you want to add your furniture to, then choose your furniture image or your painting.
 
 ![img3](https://user-images.githubusercontent.com/31229408/81720845-405fd080-947f-11ea-954a-79ed630bdb5f.JPG)
 
-If you pressed (Add decoration or curtains) then you want to add special decorations to your room, and just as before, you will select your room, choose an area, choose your decoration Image.
+If you pressed (Add a wall paper or a portrait) then you want to add special decorations to your room, and just like before, you will select your room, choose an area, choose your decoration Image.
 
 ![img4](https://user-images.githubusercontent.com/31229408/81720896-4d7cbf80-947f-11ea-9515-c920da9b0c04.JPG)
 
@@ -49,6 +50,9 @@ We used Java, opencv(for java) for coding, (Android studio) As IDE for building,
 3- you can add any furniture design you want to your room and view it.  
 4- you can add any decoration like (paintings, landscape) to your room.  
 5- saving your images and reuse them to add more and more things to it to get it just as you wanted to.  
+
+## Setup
+You can download our application using this link => https://drive.google.com/open?id=1ydIjVop15A33AXyrocMBMYeFzx8Hd8oh which also exists in APK folder.
 
 ## Inspiration and future work
 This app was inspired by one of our team members who has gone through hard times with his apartment, spent a lot of time imagining his room and thinking what it will be like, he spent a lot of money and hard work moving and removing his furniture to see what's better.
